@@ -45,6 +45,10 @@
 #    define SN32_RGB_MATRIX_COLS MATRIX_COLS
 #endif
 
+#if !defined(SN32_RGB_MATRIX_ROW_PINS)
+#    error Missing definition for SN32_RGB_MATRIX_ROW_PINS
+#endif
+
 #if !defined(SN32_RGB_MATRIX_COL_PINS)
 #    define SN32_RGB_MATRIX_COL_PINS MATRIX_COL_PINS
 #endif
