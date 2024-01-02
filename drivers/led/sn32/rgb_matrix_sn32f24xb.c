@@ -107,7 +107,7 @@ static PWMConfig pwmcfg = {
     NULL,        /* RGB Callback */
     {
         /* Default all channels to disabled - Channels will be configured during init */
-        [0 ... 23] = {PWM_OUTPUT_DISABLED, NULL, 0},
+        [0 ... PWM_CHANNELS-1] = {PWM_OUTPUT_DISABLED, NULL, 0},
     },
     0 /* HW dependent part.*/
 };
@@ -125,8 +125,8 @@ static void rgb_ch_ctrl(PWMConfig *cfg) {
              channel = (x*16+y)%24
              pfpa = 1, when (x*16+y)>23
         */
-        uint8_t pio_value = ((uint32_t)(PAL_PORT(led_col_pins[i])) - (uint32_t)(PAL_PORT(A0))) / ((uint32_t)(PAL_PORT(B0)) - (uint32_t)(PAL_PORT(A0))) * 16 + PAL_PAD(led_col_pins[i]);
-        uint8_t ch_idx    = pio_value % 24;
+        uint8_t pio_value = ((uint32_t)(PAL_PORT(led_col_pins[i])) - (uint32_t)(PAL_PORT(A0))) / ((uint32_t)(PAL_PORT(B0)) - (uint32_t)(PAL_PORT(A0))) * PAL_IOPORTS_WIDTH + PAL_PAD(led_col_pins[i]);
+        uint8_t ch_idx    = pio_value % PWM_CHANNELS;
         chan_col_order[i] = ch_idx;
 #elif (SN32_PWM_DIRECTION == ROW2COL)
     for (uint8_t i = 0; i < SN32_RGB_MATRIX_ROWS_HW; i++) {
@@ -139,12 +139,12 @@ static void rgb_ch_ctrl(PWMConfig *cfg) {
              channel = (x*16+y)%24
              pfpa = 1, when (x*16+y)>23
         */
-        uint8_t pio_value = ((uint32_t)(PAL_PORT(led_row_pins[i])) - (uint32_t)(PAL_PORT(A0))) / ((uint32_t)(PAL_PORT(B0)) - (uint32_t)(PAL_PORT(A0))) * 16 + PAL_PAD(led_row_pins[i]);
-        uint8_t ch_idx    = pio_value % 24;
+        uint8_t pio_value = ((uint32_t)(PAL_PORT(led_row_pins[i])) - (uint32_t)(PAL_PORT(A0))) / ((uint32_t)(PAL_PORT(B0)) - (uint32_t)(PAL_PORT(A0))) * PAL_IOPORTS_WIDTH + PAL_PAD(led_row_pins[i]);
+        uint8_t ch_idx    = pio_value % PWM_CHANNELS;
         chan_row_order[i] = ch_idx;
 #endif
 #if (SN32_PWM_CONTROL == HARDWARE_PWM)
-        cfg->channels[ch_idx].pfpamsk = pio_value > 23;
+        cfg->channels[ch_idx].pfpamsk = pio_value > (PWM_CHANNELS -1);
         cfg->channels[ch_idx].mode    = SN32_PWM_OUTPUT_ACTIVE_LEVEL;
 #endif // SN32_PWM_CONTROL
     }
