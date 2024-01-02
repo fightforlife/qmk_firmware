@@ -71,11 +71,13 @@ static uint8_t led_duty_cycle[SN32_RGB_MATRIX_ROWS_HW] = {0}; // track the chann
 #if (DIODE_DIRECTION == ROW2COL)
 static matrix_row_t row_shifter = MATRIX_ROW_SHIFTER;
 #endif
+#if defined(SHARED_MATRIX)
 extern matrix_row_t   raw_matrix[MATRIX_ROWS];                       // raw values
 extern matrix_row_t   matrix[MATRIX_ROWS];                           // debounced values
 static matrix_row_t   shared_matrix[MATRIX_ROWS];                    // scan values
 static volatile bool  matrix_locked                         = false; // matrix update check
 static volatile bool  matrix_scanned                        = false;
+#endif // SHARED MATRIX
 static const uint32_t periodticks                           = RGB_MATRIX_MAXIMUM_BRIGHTNESS;
 static const uint32_t freq                                  = (RGB_MATRIX_HUE_STEP * RGB_MATRIX_SAT_STEP * RGB_MATRIX_VAL_STEP * RGB_MATRIX_SPD_STEP * RGB_MATRIX_LED_PROCESS_LIMIT);
 static const pin_t    led_row_pins[SN32_RGB_MATRIX_ROWS_HW] = SN32_RGB_MATRIX_ROW_PINS; // We expect a R,B,G order here
@@ -87,6 +89,7 @@ bool                  led_state_buf_update_required = false;
 static const uint8_t underglow_leds[UNDERGLOW_LEDS] = UNDERGLOW_IDX;
 #endif
 
+#if defined(SHARED_MATRIX)
 void matrix_output_unselect_delay(uint8_t line, bool key_pressed) {
     for (int i = 0; i < TIME_US2I(MATRIX_IO_DELAY); ++i) {
         __asm__ volatile("" ::: "memory");
@@ -95,6 +98,7 @@ void matrix_output_unselect_delay(uint8_t line, bool key_pressed) {
 bool matrix_can_read(void) {
     return matrix_scanned;
 }
+#endif // SHARED_MATRIX
 
 /* PWM configuration structure. We use timer CT16B1 with 24 channels. */
 static PWMConfig pwmcfg = {
@@ -152,6 +156,7 @@ static void shared_matrix_rgb_enable(void) {
     pwmEnablePeriodicNotification(&PWMD1);
 }
 
+#if defined(SHARED_MATRIX)
 static void shared_matrix_scan_keys(matrix_row_t current_matrix[], uint8_t current_key, uint8_t last_key) {
     // Scan the key matrix row or col, depending on DIODE_DIRECTION
     static uint8_t first_scanned;
@@ -190,6 +195,7 @@ static void shared_matrix_scan_keys(matrix_row_t current_matrix[], uint8_t curre
         }
     }
 }
+#endif // SHARED_MATRIX
 
 #if (SN32_PWM_DIRECTION == COL2ROW)
 
@@ -217,7 +223,9 @@ static void update_pwm_channels(PWMDriver *pwmp) {
     current_row++;
     /* Check if counter has wrapped around, reset before the next pass */
     if (current_row == SN32_RGB_MATRIX_ROWS_HW) current_row = 0;
+#   if defined(SHARED_MATRIX)
     uint8_t last_key_row = current_key_row;
+#   endif // SHARED_MATRIX
     // Advance to the next key matrix row
 #    if (SN32_PWM_CONTROL == HARDWARE_PWM)
     if (current_row % SN32_RGB_MATRIX_ROW_CHANNELS == 2) current_key_row++;
@@ -229,7 +237,9 @@ static void update_pwm_channels(PWMDriver *pwmp) {
     // Disable LED output before scanning the key matrix
     if (current_key_row < ROWS_PER_HAND) {
         shared_matrix_rgb_disable_output();
+#   if defined(SHARED_MATRIX)
         shared_matrix_scan_keys(shared_matrix, current_key_row, last_key_row);
+#   endif // SHARED_MATRIX
     }
     bool enable_pwm_output = false;
     for (uint8_t current_key_col = 0; current_key_col < SN32_RGB_MATRIX_COLS; current_key_col++) {
@@ -329,7 +339,9 @@ static void update_pwm_channels(PWMDriver *pwmp) {
     // Disable LED output before scanning the key matrix
     if (current_key_col < MATRIX_COLS) {
         shared_matrix_rgb_disable_output();
+#   if defined(SHARED_MATRIX)
         shared_matrix_scan_keys(shared_matrix, current_key_col, last_key_col);
+#   endif // SHARED_MATRIX
     }
 
     for (uint8_t x = 0; x < SN32_RGB_MATRIX_COLS; x++) {
@@ -440,10 +452,14 @@ void sn32f24xb_init(void) {
     }
     // Determine which PWM channels we need to control
     rgb_ch_ctrl(&pwmcfg);
+
+#   if defined(SHARED_MATRIX)
     // initialize matrix state: all keys off
     for (uint8_t i = 0; i < MATRIX_ROWS; i++) {
         shared_matrix[i] = 0;
     }
+#   endif // SHARED_MATRIX
+
     pwmStart(&PWMD1, &pwmcfg);
     shared_matrix_rgb_enable();
 }
@@ -493,6 +509,7 @@ void sn32f24xb_set_color_all(uint8_t r, uint8_t g, uint8_t b) {
     }
 }
 
+#if defined(SHARED_MATRIX)
 bool matrix_scan_custom(matrix_row_t current_matrix[]) {
     if (!matrix_scanned) return false; // Nothing to process until we have the matrix scanned
 
@@ -503,3 +520,4 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]) {
 
     return changed;
 }
+#endif // SHARED_MATRIX
