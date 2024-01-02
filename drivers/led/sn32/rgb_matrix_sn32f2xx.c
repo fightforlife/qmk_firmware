@@ -565,7 +565,7 @@ static void rgb_callback(PWMDriver *pwmp) {
     update_pwm_channels(pwmp);
     chSysLockFromISR();
     // Advance the timer to just before the wrap-around, that will start a new PWM cycle
-    pwm_lld_change_counter(pwmp, 0xFFFF);
+    pwm_lld_change_counter(pwmp, UINT16_MAX);
     // Enable the interrupt
     pwmEnablePeriodicNotificationI(pwmp);
     chSysUnlockFromISR();
