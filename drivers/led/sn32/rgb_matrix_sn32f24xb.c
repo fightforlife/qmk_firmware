@@ -448,7 +448,11 @@ static void rgb_callback(PWMDriver *pwmp) {
 void sn32f24xb_init(void) {
     for (uint8_t x = 0; x < SN32_RGB_MATRIX_ROWS_HW; x++) {
         setPinOutput(led_row_pins[x]);
+#    if (SN32_RGB_OUTPUT_ACTIVE_LEVEL == SN32_RGB_OUTPUT_ACTIVE_HIGH)
         writePinLow(led_row_pins[x]);
+#    elif (SN32_RGB_OUTPUT_ACTIVE_LEVEL == SN32_RGB_OUTPUT_ACTIVE_LOW)
+        writePinHigh(led_row_pins[x]);
+#    endif // SN32_RGB_OUTPUT_ACTIVE_LEVEL
     }
     // Determine which PWM channels we need to control
     rgb_ch_ctrl(&pwmcfg);
