@@ -20,6 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdint.h>
 #include <stdbool.h>
 #include "gpio.h"
+#if defined(RGB_MATRIX_ENABLE)
+#    include "rgb_matrix_drivers.h"
+#endif
 
 /* diode directions */
 #define COL2ROW 0
