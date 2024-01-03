@@ -623,6 +623,10 @@ void sn32f2xx_flush(void) {
 }
 
 void sn32f2xx_set_color(int index, uint8_t r, uint8_t g, uint8_t b) {
+    uint8_t color_r = r * SN32_LED_OUTPUT_LUMINOSITY_R;
+    uint8_t color_g = g * SN32_LED_OUTPUT_LUMINOSITY_G;
+    uint8_t color_b = b * SN32_LED_OUTPUT_LUMINOSITY_B;
+
 #ifdef UNDERGLOW_RBG
     bool flip_gb = false;
     for (uint8_t led_id = 0; led_id < UNDERGLOW_LEDS; led_id++) {
@@ -631,23 +635,23 @@ void sn32f2xx_set_color(int index, uint8_t r, uint8_t g, uint8_t b) {
         }
     }
     if (flip_gb) {
-        if (led_state_buf[index].r == r && led_state_buf[index].b == g && led_state_buf[index].g == b) {
+        if (led_state_buf[index].r == color_r && led_state_buf[index].b == color_g && led_state_buf[index].g == color_b) {
             return;
         }
 
-        led_state_buf[index].r        = r;
-        led_state_buf[index].b        = g;
-        led_state_buf[index].g        = b;
+        led_state_buf[index].r        = color_r;
+        led_state_buf[index].b        = color_g;
+        led_state_buf[index].g        = color_b;
         led_state_buf_update_required = true;
     } else {
 #endif // UNDERGLOW_RBG
-        if (led_state_buf[index].r == r && led_state_buf[index].b == b && led_state_buf[index].g == g) {
+        if (led_state_buf[index].r == color_r && led_state_buf[index].b == color_b && led_state_buf[index].g == color_g) {
             return;
         }
 
-        led_state_buf[index].r        = r;
-        led_state_buf[index].b        = b;
-        led_state_buf[index].g        = g;
+        led_state_buf[index].r        = color_r;
+        led_state_buf[index].b        = color_b;
+        led_state_buf[index].g        = color_g;
         led_state_buf_update_required = true;
 #ifdef UNDERGLOW_RBG
     }

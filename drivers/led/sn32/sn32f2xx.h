@@ -19,6 +19,16 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#if !defined(SN32_LED_OUTPUT_LUMINOSITY_R)
+#    define SN32_LED_OUTPUT_LUMINOSITY_R 1
+#endif
+#if !defined(SN32_LED_OUTPUT_LUMINOSITY_G)
+#    define SN32_LED_OUTPUT_LUMINOSITY_G 1
+#endif
+#if !defined(SN32_LED_OUTPUT_LUMINOSITY_B)
+#    define SN32_LED_OUTPUT_LUMINOSITY_B 1
+#endif
+
 #if defined(RGB_MATRIX_SN32F2XX)
 #    define SN32F2XX_LED_COUNT RGB_MATRIX_LED_COUNT
 #endif
