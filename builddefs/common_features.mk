@@ -567,8 +567,8 @@ ifeq ($(strip $(RGB_MATRIX_ENABLE)), yes)
     endif
 
     ifeq ($(strip $(RGB_MATRIX_DRIVER)), sn32f2xx)
-        COMMON_VPATH += $(DRIVER_PATH)/led/sn32
-        SRC += rgb_matrix_sn32f2xx.c
+        COMMON_VPATH += $(DRIVER_PATH)/led
+        SRC += sn32f2xx.c
     endif
 
     ifeq ($(strip $(RGB_MATRIX_CUSTOM_KB)), yes)
