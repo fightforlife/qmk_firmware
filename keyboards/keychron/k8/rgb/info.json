@@ -63,7 +63,7 @@
             "splash" : true,
             "typing_heatmap" : true,
         },
-        "driver": "sn32f24xb",
+        "driver": "sn32f2xx",
         "react_on_keyup": true,
         "sleep": true
     },

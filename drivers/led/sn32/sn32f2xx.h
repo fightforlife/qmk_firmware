@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#if defined(RGB_MATRIX_SN32F24XB)
-#    define SN32F24XB_LED_COUNT RGB_MATRIX_LED_COUNT
+#if defined(RGB_MATRIX_SN32F2XX)
+#    define SN32F2XX_LED_COUNT RGB_MATRIX_LED_COUNT
 #endif
 
 #if !defined(SN32_PWM_OUTPUT_ACTIVE_LEVEL)
@@ -48,7 +48,7 @@
 #    define SN32_RGB_MATRIX_ROWS_HW (SN32_RGB_MATRIX_ROWS * SN32_RGB_MATRIX_ROW_CHANNELS)
 #endif
 
-void sn32f24xb_init(void);
-void sn32f24xb_flush(void);
-void sn32f24xb_set_color(int index, uint8_t r, uint8_t g, uint8_t b);
-void sn32f24xb_set_color_all(uint8_t r, uint8_t g, uint8_t b);
+void sn32f2xx_init(void);
+void sn32f2xx_flush(void);
+void sn32f2xx_set_color(int index, uint8_t r, uint8_t g, uint8_t b);
+void sn32f2xx_set_color_all(uint8_t r, uint8_t g, uint8_t b);

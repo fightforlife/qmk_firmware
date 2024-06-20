@@ -211,11 +211,11 @@ const rgb_matrix_driver_t rgb_matrix_driver = {
     .set_color_all = setled_all,
 };
 
-#elif defined(RGB_MATRIX_SN32F24XB)
+#elif defined(RGB_MATRIX_SN32F2XX)
 const rgb_matrix_driver_t rgb_matrix_driver = {
-    .init          = sn32f24xb_init,
-    .flush         = sn32f24xb_flush,
-    .set_color     = sn32f24xb_set_color,
-    .set_color_all = sn32f24xb_set_color_all,
+    .init          = sn32f2xx_init,
+    .flush         = sn32f2xx_flush,
+    .set_color     = sn32f2xx_set_color,
+    .set_color_all = sn32f2xx_set_color_all,
 };
 #endif

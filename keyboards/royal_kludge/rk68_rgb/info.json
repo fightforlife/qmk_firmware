@@ -49,7 +49,7 @@
             "splash" : true,
             "typing_heatmap" : true
         },
-        "driver": "sn32f24xb",
+        "driver": "sn32f2xx",
         "layout": [
             { "matrix": [0,0], "x": 0, "y": 0, "flags": 4},
             { "matrix": [0,1], "x": 14, "y": 0, "flags": 4},
