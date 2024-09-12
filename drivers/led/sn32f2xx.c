@@ -461,9 +461,12 @@ static void shared_matrix_rgb_disable_output(void) {
     for (uint8_t x = 0; x < SN32_RGB_MATRIX_ROWS_HW; x++) {
 #        if (SN32_PWM_CONTROL == HARDWARE_PWM)
         pwmDisableChannel(&PWMD1, chan_row_order[x]);
-#        elif (SN32_PWM_CONTROL == SOFTWARE_PWM)
-        gpio_set_pin_input(led_row_pins[x]);
 #        endif // SN32_PWM_CONTROL
+#        if (SN32_PWM_OUTPUT_ACTIVE_LEVEL == SN32_PWM_OUTPUT_ACTIVE_HIGH)
+        gpio_write_pin_low(led_row_pins[x]);
+#        elif (SN32_PWM_OUTPUT_ACTIVE_LEVEL == SN32_PWM_OUTPUT_ACTIVE_LOW)
+        gpio_write_pin_high(led_row_pins[x]);
+#        endif // SN32_RGB_OUTPUT_ACTIVE_LEVEL
     }
 #    endif     // DIODE_DIRECTION != SN32_PWM_DIRECTION
 }
@@ -590,9 +593,11 @@ static void rgb_callback(PWMDriver *pwmp) {
 void sn32f2xx_init(void) {
     for (uint8_t x = 0; x < SN32_RGB_MATRIX_ROWS_HW; x++) {
         gpio_set_pin_output_push_pull(led_row_pins[x]);
-#    if (SN32_RGB_OUTPUT_ACTIVE_LEVEL == SN32_RGB_OUTPUT_ACTIVE_HIGH)
+#    if ((SN32_PWM_DIRECTION == COL2ROW) && (SN32_RGB_OUTPUT_ACTIVE_LEVEL == SN32_RGB_OUTPUT_ACTIVE_HIGH) || \
+        (SN32_PWM_DIRECTION == ROW2COL) && (SN32_PWM_OUTPUT_ACTIVE_LEVEL == SN32_PWM_OUTPUT_ACTIVE_HIGH))
         gpio_write_pin_low(led_row_pins[x]);
-#    elif (SN32_RGB_OUTPUT_ACTIVE_LEVEL == SN32_RGB_OUTPUT_ACTIVE_LOW)
+#    elif ((SN32_PWM_DIRECTION == COL2ROW) && (SN32_RGB_OUTPUT_ACTIVE_LEVEL == SN32_RGB_OUTPUT_ACTIVE_LOW) || \
+        (SN32_PWM_DIRECTION == ROW2COL) && (SN32_PWM_OUTPUT_ACTIVE_LEVEL == SN32_PWM_OUTPUT_ACTIVE_LOW))
         gpio_write_pin_high(led_row_pins[x]);
 #    endif // SN32_RGB_OUTPUT_ACTIVE_LEVEL
     }
