@@ -134,7 +134,7 @@
         }
     },
     "rgb_matrix": {
-        "driver": "sn32f24xb",
+        "driver": "sn32f2xx",
         "animations": {
             "breathing": true,
             "band_spiral_val": true,
