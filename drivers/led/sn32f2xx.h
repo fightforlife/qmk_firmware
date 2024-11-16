@@ -78,3 +78,7 @@ void sn32f2xx_init(void);
 void sn32f2xx_flush(void);
 void sn32f2xx_set_color(int index, uint8_t r, uint8_t g, uint8_t b);
 void sn32f2xx_set_color_all(uint8_t r, uint8_t g, uint8_t b);
+void sn32f2xx_save_color(uint8_t ledNumber, char colorChannel, uint8_t value);
+uint8_t sn32f2xx_load_color(uint8_t ledNumber, char colorChannel);
+void sn32f2xx_save_color_buf(uint8_t ledNumber, char colorChannel, uint8_t value);
+uint8_t sn32f2xx_load_color_buf(uint8_t ledNumber, char colorChannel);

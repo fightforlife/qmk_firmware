@@ -34,6 +34,11 @@
 #define HARDWARE_PWM 0
 #define SOFTWARE_PWM 1
 
+#ifndef SN32F2XX_RGB_MATRIX_COLOR_DEPTH
+#    define SN32F2XX_RGB_MATRIX_COLOR_DEPTH 24
+#endif
+
+
 /*
     Default configuration example
 
@@ -98,8 +103,13 @@ static const uint32_t periodticks                               = RGB_MATRIX_MAX
 static const uint32_t freq                                      = (RGB_MATRIX_HUE_STEP * RGB_MATRIX_SAT_STEP * RGB_MATRIX_VAL_STEP * RGB_MATRIX_SPD_STEP * RGB_MATRIX_LED_PROCESS_LIMIT);
 static const pin_t    led_row_pins[SN32F2XX_RGB_MATRIX_ROWS_HW] = SN32F2XX_RGB_MATRIX_ROW_PINS; // We expect a R,B,G order here
 static const pin_t    led_col_pins[SN32F2XX_RGB_MATRIX_COLS]    = SN32F2XX_RGB_MATRIX_COL_PINS;
+#if (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 24)
 static RGB            led_state[SN32F2XX_LED_COUNT];     // led state buffer
 static RGB            led_state_buf[SN32F2XX_LED_COUNT]; // led state buffer
+#elif (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 8)
+static uint8_t            led_state[SN32F2XX_LED_COUNT];     // led state buffer
+static uint8_t            led_state_buf[SN32F2XX_LED_COUNT]; // led state buffer
+#endif //SN32F2XX_RGB_MATRIX_COLOR_DEPTH
 bool                  led_state_buf_update_required = false;
 #ifdef UNDERGLOW_RBG // handle underglow with flipped B,G channels
 static const uint8_t underglow_leds[UNDERGLOW_LEDS] = UNDERGLOW_IDX;
@@ -390,33 +400,33 @@ static void update_pwm_channels(PWMDriver *pwmp) {
         if (led_index >= SN32F2XX_LED_COUNT) continue;
 #    endif // SN32F2XX_PWM_CONTROL
         // Check if we need to enable RGB output
-        if (led_state[led_index].b > 0) enable_pwm_output |= true;
-        if (led_state[led_index].g > 0) enable_pwm_output |= true;
-        if (led_state[led_index].r > 0) enable_pwm_output |= true;
+        if (sn32f2xx_load_color(led_index, 'B') > 0) enable_pwm_output |= true;
+        if (sn32f2xx_load_color(led_index, 'G') > 0) enable_pwm_output |= true;
+        if (sn32f2xx_load_color(led_index, 'R') > 0) enable_pwm_output |= true;
             // Update matching RGB channel PWM configuration
 #    if (SN32F2XX_PWM_CONTROL == HARDWARE_PWM)
         switch (current_row % SN32F2XX_RGB_MATRIX_ROW_CHANNELS) {
             case 0:
-                pwmEnableChannel(pwmp, chan_col_order[current_key_col], led_state[led_index].b);
+                pwmEnableChannel(pwmp, chan_col_order[current_key_col], sn32f2xx_load_color(led_index, 'B'));
                 break;
             case 1:
-                pwmEnableChannel(pwmp, chan_col_order[current_key_col], led_state[led_index].g);
+                pwmEnableChannel(pwmp, chan_col_order[current_key_col], sn32f2xx_load_color(led_index, 'G'));
                 break;
             case 2:
-                pwmEnableChannel(pwmp, chan_col_order[current_key_col], led_state[led_index].r);
+                pwmEnableChannel(pwmp, chan_col_order[current_key_col], sn32f2xx_load_color(led_index, 'R'));
                 break;
             default:;
         }
 #    elif (SN32F2XX_PWM_CONTROL == SOFTWARE_PWM)
         switch (current_row % SN32F2XX_RGB_MATRIX_ROW_CHANNELS) {
             case 0:
-                led_duty_cycle[current_key_col] = led_state[led_index].r;
+                led_duty_cycle[current_key_col] = sn32f2xx_load_color(led_index, 'R');
                 break;
             case 1:
-                led_duty_cycle[current_key_col] = led_state[led_index].b;
+                led_duty_cycle[current_key_col] = sn32f2xx_load_color(led_index, 'B');
                 break;
             case 2:
-                led_duty_cycle[current_key_col] = led_state[led_index].g;
+                led_duty_cycle[current_key_col] = sn32f2xx_load_color(led_index, 'G');
                 break;
             default:;
         }
@@ -487,32 +497,32 @@ static void update_pwm_channels(PWMDriver *pwmp) {
 #    endif
         uint8_t led_row_id = (current_key_row * SN32F2XX_RGB_MATRIX_ROW_CHANNELS);
         // Check if we need to enable RGB output
-        if (led_state[led_index].b > 0) enable_pwm_output |= true;
-        if (led_state[led_index].g > 0) enable_pwm_output |= true;
-        if (led_state[led_index].r > 0) enable_pwm_output |= true;
+        if (sn32f2xx_load_color(led_index, 'B') > 0) enable_pwm_output |= true;
+        if (sn32f2xx_load_color(led_index, 'G') > 0) enable_pwm_output |= true;
+        if (sn32f2xx_load_color(led_index, 'R') > 0) enable_pwm_output |= true;
             // Update matching RGB channel PWM configuration
 #    if (SN32F2XX_PWM_CONTROL == HARDWARE_PWM)
-        pwmEnableChannelI(pwmp, chan_row_order[(led_row_id + 0)], led_state[led_index].r);
-        pwmEnableChannelI(pwmp, chan_row_order[(led_row_id + 1)], led_state[led_index].b);
-        pwmEnableChannelI(pwmp, chan_row_order[(led_row_id + 2)], led_state[led_index].g);
+        pwmEnableChannelI(pwmp, chan_row_order[(led_row_id + 0)], sn32f2xx_load_color(led_index, 'R'));
+        pwmEnableChannelI(pwmp, chan_row_order[(led_row_id + 1)], sn32f2xx_load_color(led_index, 'B'));
+        pwmEnableChannelI(pwmp, chan_row_order[(led_row_id + 2)], sn32f2xx_load_color(led_index, 'G'));
     }
     // Enable RGB output
     if (enable_pwm_output) {
-        gpio_set_pin_output_push_pull(led_col_pins[last_key_col]);
+        gpio_set_pin_output_push_pull(led_col_pins[current_key_col ]);
 #        if (SN32F2XX_RGB_OUTPUT_ACTIVE_LEVEL == SN32F2XX_RGB_OUTPUT_ACTIVE_HIGH)
-        gpio_write_pin_high(led_col_pins[last_key_col]);
+        gpio_write_pin_high(led_col_pins[current_key_col ]);
 #        elif (SN32F2XX_RGB_OUTPUT_ACTIVE_LEVEL == SN32F2XX_RGB_OUTPUT_ACTIVE_LOW)
-        gpio_write_pin_low(led_col_pins[last_key_col]);
+        gpio_write_pin_low(led_col_pins[current_key_col ]);
 #        endif // SN32F2XX_RGB_OUTPUT_ACTIVE_LEVEL
     }
 #    elif (SN32F2XX_PWM_CONTROL == SOFTWARE_PWM)
-        led_duty_cycle[(led_row_id + 0)] = led_state[led_index].r;
-        led_duty_cycle[(led_row_id + 1)] = led_state[led_index].b;
-        led_duty_cycle[(led_row_id + 2)] = led_state[led_index].g;
+        led_duty_cycle[(led_row_id + 0)] = sn32f2xx_load_color(led_index, 'R');
+        led_duty_cycle[(led_row_id + 1)] = sn32f2xx_load_color(led_index, 'B');
+        led_duty_cycle[(led_row_id + 2)] = sn32f2xx_load_color(led_index, 'G');
     }
     // Enable RGB output
     if (enable_pwm_output) {
-        gpio_set_pin_output_push_pull(led_col_pins[last_key_col]);
+        gpio_set_pin_output_push_pull(led_col_pins[current_key_col]);
 #        if (SN32F2XX_RGB_OUTPUT_ACTIVE_LEVEL == SN32F2XX_RGB_OUTPUT_ACTIVE_HIGH)
         gpio_write_pin_high(led_col_pins[current_key_col]);
 #        elif (SN32F2XX_RGB_OUTPUT_ACTIVE_LEVEL == SN32F2XX_RGB_OUTPUT_ACTIVE_LOW)
@@ -602,7 +612,11 @@ void sn32f2xx_init(void) {
 
 void sn32f2xx_flush(void) {
     if (led_state_buf_update_required) {
+#if (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 24)
         memcpy(led_state, led_state_buf, sizeof(RGB) * SN32F2XX_LED_COUNT);
+#elif (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 8)
+        memcpy(led_state, led_state_buf, sizeof(uint8_t) * SN32F2XX_LED_COUNT);
+#endif //SN32F2XX_RGB_MATRIX_COLOR_DEPTH
         led_state_buf_update_required = false;
     }
 }
@@ -620,23 +634,22 @@ void sn32f2xx_set_color(int index, uint8_t r, uint8_t g, uint8_t b) {
         }
     }
     if (flip_gb) {
-        if (led_state_buf[index].r == color_r && led_state_buf[index].b == color_g && led_state_buf[index].g == color_b) {
+        if (sn32f2xx_load_color_buf(index, 'R') == color_r && sn32f2xx_load_color_buf(index, 'B') == color_g && sn32f2xx_load_color_buf(index, 'G') == color_b) {
             return;
         }
-
-        led_state_buf[index].r        = color_r;
-        led_state_buf[index].b        = color_g;
-        led_state_buf[index].g        = color_b;
+        sn32f2xx_save_color_buf(index, 'R', color_r);
+        sn32f2xx_save_color_buf(index, 'B', color_g);
+        sn32f2xx_save_color_buf(index, 'G', color_b);
         led_state_buf_update_required = true;
     } else {
 #endif // UNDERGLOW_RBG
-        if (led_state_buf[index].r == color_r && led_state_buf[index].b == color_b && led_state_buf[index].g == color_g) {
+        if (sn32f2xx_load_color_buf(index, 'R') == color_r && sn32f2xx_load_color_buf(index, 'B') == color_b && sn32f2xx_load_color_buf(index, 'G') == color_g) {
             return;
         }
 
-        led_state_buf[index].r        = color_r;
-        led_state_buf[index].b        = color_b;
-        led_state_buf[index].g        = color_g;
+        sn32f2xx_save_color_buf(index, 'R', color_r);
+        sn32f2xx_save_color_buf(index, 'B', color_b);
+        sn32f2xx_save_color_buf(index, 'G', color_g);
         led_state_buf_update_required = true;
 #ifdef UNDERGLOW_RBG
     }
@@ -661,3 +674,107 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]) {
     return changed;
 }
 #endif // SHARED_MATRIX
+
+
+void sn32f2xx_save_color(uint8_t ledNumber, char colorChannel, uint8_t value) {
+#if (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 24)
+    switch(colorChannel){
+        case 'R':
+            led_state[ledNumber].r = value; 
+            break;
+        case 'G':
+            led_state[ledNumber].g = value; 
+            break;
+        case 'B':
+            led_state[ledNumber].b = value;  
+            break;       
+    }    
+#elif (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 8)
+    switch(colorChannel){
+        case 'R':
+            led_state[ledNumber] = (led_state[ledNumber] & ~0b11100000) | (((value / 32) << 5) & 0b11100000);
+            break;
+        case 'G':
+            led_state[ledNumber] = (led_state[ledNumber] & ~0b00011100) | (((value / 32) << 2) & 0b00011100);
+            break;
+        case 'B':
+            led_state[ledNumber] = (led_state[ledNumber] & ~0b00000011) | (((value / 64) << 0) & 0b00000011);
+            break;        
+    }    
+#endif //SN32F2XX_RGB_MATRIX_COLOR_DEPTH
+}
+
+void sn32f2xx_save_color_buf(uint8_t ledNumber, char colorChannel, uint8_t value) {
+#if (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 24)
+    switch(colorChannel){
+        case 'R':
+            led_state_buf[ledNumber].r = value; 
+            break;
+        case 'G':
+            led_state_buf[ledNumber].g = value; 
+            break;
+        case 'B':
+            led_state_buf[ledNumber].b = value;  
+            break;        
+    }    
+#elif (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 8)
+    switch(colorChannel){
+        case 'R':
+            led_state_buf[ledNumber] = (led_state_buf[ledNumber] & ~0b11100000) | (((value / 32) << 5) & 0b11100000);
+            break;
+        case 'G':
+            led_state_buf[ledNumber] = (led_state_buf[ledNumber] & ~0b00011100) | (((value / 32) << 2) & 0b00011100);
+            break;
+        case 'B':
+            led_state_buf[ledNumber] = (led_state_buf[ledNumber] & ~0b00000011) | (((value / 64) << 0) & 0b00000011);
+            break;        
+    }    
+#endif //SN32F2XX_RGB_MATRIX_COLOR_DEPTH
+}
+
+
+uint8_t sn32f2xx_load_color(uint8_t ledNumber, char colorChannel){
+#if (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 24)
+    switch(colorChannel){
+        case 'R':
+            return led_state[ledNumber].r;
+        case 'G':
+            return led_state[ledNumber].g;
+        case 'B':
+            return led_state[ledNumber].b;        
+    }   
+#elif (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 8)            
+    switch(colorChannel){
+        case 'R':
+            return (uint8_t) ((led_state[ledNumber] & 0b11100000) >> 5)*32;
+        case 'G':
+            return (uint8_t) ((led_state[ledNumber] & 0b00011100) >> 2)*32;
+        case 'B':
+            return (uint8_t) ((led_state[ledNumber] & 0b00000011) >> 0)*64;   
+    } 
+#endif //SN32F2XX_RGB_MATRIX_COLOR_DEPTH
+    return 0x00;
+}
+
+uint8_t sn32f2xx_load_color_buf(uint8_t ledNumber, char colorChannel){
+#if (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 24)
+    switch(colorChannel){
+        case 'R':
+            return led_state_buf[ledNumber].r;
+        case 'G':
+            return led_state_buf[ledNumber].g;
+        case 'B':
+            return led_state_buf[ledNumber].b;           
+    }           
+#elif (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 8)
+    switch(colorChannel){
+        case 'R':
+            return (uint8_t) ((led_state_buf[ledNumber] & 0b11100000) >> 5)*32;
+        case 'G':
+            return (uint8_t) ((led_state_buf[ledNumber] & 0b00011100) >> 2)*32;
+        case 'B':
+            return (uint8_t) ((led_state_buf[ledNumber] & 0b00000011) >> 0)*64;   
+    } 
+#endif //SN32F2XX_RGB_MATRIX_COLOR_DEPTH
+    return 0x00;
+}
