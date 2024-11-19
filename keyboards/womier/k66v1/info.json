@@ -40,7 +40,7 @@
         "command": false,
         "console": false,
         "extrakey": true,
-        "nkro": false,       
+        "nkro": true,       
         "midi": false,
         "music": false,
         "unicode": false,
@@ -158,7 +158,7 @@
         }
     },
 
-    "debounce": 5, 
+    "debounce": 3, 
     "diode_direction": "ROW2COL",
     "matrix_pins": {
         "cols": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "C3", "C4", "C5", "C6", "C7", "C8"],
@@ -166,7 +166,7 @@
         "custom": false,
         "custom_lite": false,
         "ghost": false,
-        "io_delay": 30
+        "io_delay": 10
     },
 
 
@@ -308,7 +308,7 @@
              {"matrix": [4, 10], "flags" : 4, "x": 174, "y": 58},
              {"matrix": [4, 11], "flags" : 4, "x": 189, "y": 58},
              {"matrix": [4, 12], "flags" : 4, "x": 203, "y": 58},   
-             {"matrix": [4, 13], "flags" : 4, "x": 217, "y": 58},
+             {"matrix": [4, 13], "flags" : 4, "x": 217, "y": 58}
              
              //Underglow LEDs (43)
 /*              {"flags" : 2, "x": 207, "y": 5},
@@ -361,7 +361,7 @@
         "device_version": "1.0.0",
         "pid": "0x7698", 
         "vid": "0xFEED",
-        "force_nkro": false,
+        "force_nkro": true,
         "max_power": 500,
         "no_startup_check": false, 
         "polling_interval": 1,
