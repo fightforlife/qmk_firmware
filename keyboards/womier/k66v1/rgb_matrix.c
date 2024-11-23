@@ -1,11 +1,11 @@
 #include "rgb_matrix.h"
 #include "drivers/led/sn32f2xx.c"
-#include "custom_drivers/sled1734x_buffer.c"
+//#include "custom_drivers/sled1734x_mixed.c"
+#include "custom_drivers/sled1734x_direct.c"
 //#include "drivers/led/sled1734x.c"
 
 void custom_init(void) {
     sn32f2xx_init();
-    //SLED1734X_init(UNDERGLOW_I2C_ADR);
     sled1734x_init_drivers();
 }
 
@@ -18,7 +18,6 @@ void custom_set_color(int index, uint8_t r, uint8_t g, uint8_t b) {
      //if underglow LEDs
      else if (index < RGB_MATRIX_LED_COUNT)
      {
-        //SLED1734X_set_color(index, r, g, b);
         index = index - SN32F2XX_LED_COUNT;
         sled1734x_set_color(index, r, g, b);
      }

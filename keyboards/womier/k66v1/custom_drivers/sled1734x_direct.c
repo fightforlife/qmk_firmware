@@ -1,6 +1,17 @@
 #include "rgb_matrix.h"
-#include "rgb_matrix_sled1734x.h"
+#include "sled1734x_direct.h"
 #include "progmem.h"
+
+
+#ifndef SLED1734X_RGB_MATRIX_COLOR_DEPTH
+#    define SLED1734X_RGB_MATRIX_COLOR_DEPTH 8 // 24
+#endif
+
+/* I2C Address Declarations */
+#define SLED1734X_I2C_ADDRESS_GND 0x74
+#define SLED1734X_I2C_ADDRESS_SCL 0x75
+#define SLED1734X_I2C_ADDRESS_SDA 0x76
+#define SLED1734X_I2C_ADDRESS_VDDIO 0x77
 
 #define I2C_SDA A15
 #define I2C_SCL D0
@@ -16,7 +27,6 @@
 #define I2C_SDA_HI  do { setPinOutput(I2C_SDA); writePinHigh(I2C_SDA); } while (0)
 #define I2C_SDA_LO  do { setPinOutput(I2C_SDA); writePinLow(I2C_SDA); } while (0)
 #define I2C_SDA_HIZ do { setPinInputHigh(I2C_SDA); } while (0)
-
 
 /*
  * according to the spec, high SCL peroid 0.7us, low SCL peroid 1.3us
@@ -157,7 +167,7 @@ const uint8_t PROGMEM state_frame2[8] = {
 };
 
 //Mapping of underglow RBG channels to RAM-Map of I2C LED driver
-const uint8_t PROGMEM led_map[UNDERGLOW_LED_TOTAL][4] = {
+const uint8_t PROGMEM led_map[SLED1734X_LED_COUNT][4] = {
     /*  R     B    G       Frame       */
     { 0x25, 0x35, 0x45, PAGE_FRAME_1}, //1
     { 0x24, 0x34, 0x44, PAGE_FRAME_1},
@@ -204,71 +214,70 @@ const uint8_t PROGMEM led_map[UNDERGLOW_LED_TOTAL][4] = {
     { 0x26, 0x36, 0x46, PAGE_FRAME_1}
 };
 
-void SLED1734X_init(uint8_t devid){
+void sled1734x_init_drivers(){
     // initialise I2C
     i2c_init();
     //write config Registers as described in SLED1734 pdf (Matrix type3), using writeReg func since performance is not important. (page 82, middle, 86-)
-    i2c_writeReg(devid, REG_CONFIGURE_COMMAND,       PAGE_FUNCTION);
-    i2c_writeReg(devid, REG_FUNC_CONFIGURATION,      0x00); //SYNC High Impedance 00, ADC disable 0, PWM enable 0 (00000000)
-    i2c_writeReg(devid, REG_FUNC_PICTURE_DISPLAY,    0x10); //Matrix Type 3, (00010000)
-    i2c_writeReg(devid, REG_FUNC_DISPLAY_OPTION,     0x00); //Blinking Off (00000000)
-    i2c_writeReg(devid, REG_FUNC_AUDIO_SYNC,         0x00); //Audio Off (00000000)
-    i2c_writeReg(devid, REG_FUNC_BREATH_CONTROL_1,   0x00); //Disable (00000000)
-    i2c_writeReg(devid, REG_FUNC_BREATH_CONTROL_2,   0x00); //Disable (00000000)
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_CONFIGURE_COMMAND,       PAGE_FUNCTION);
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_FUNC_CONFIGURATION,      0x00); //SYNC High Impedance 00, ADC disable 0, PWM enable 0 (00000000)
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_FUNC_PICTURE_DISPLAY,    0x10); //Matrix Type 3, (00010000)
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_FUNC_DISPLAY_OPTION,     0x00); //Blinking Off (00000000)
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_FUNC_AUDIO_SYNC,         0x00); //Audio Off (00000000)
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_FUNC_BREATH_CONTROL_1,   0x00); //Disable (00000000)
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_FUNC_BREATH_CONTROL_2,   0x00); //Disable (00000000)
     //REG_FUNC_SHUTDOWN (10)will set at the end
-    i2c_writeReg(devid, REG_FUNC_AUDIO_GAIN_CONTROL, 0x00); //Disable (00000000)
-    i2c_writeReg(devid, REG_FUNC_STAGGERED_DELAY,    0x00); //Disable (00000000)
-    i2c_writeReg(devid, REG_FUNC_SLEW_RATE_CONTROL,  0x01); //Enable (00000001)
-    i2c_writeReg(devid, REG_FUNC_CURRENT_CONTROL,    0xB0); //Default Disabled (00110001,0x31,8mA), Max (10111111,0xBF,39.5mA), Choosen(10110000,0x30,32mA)
-    i2c_writeReg(devid, REG_FUNC_OPEN_SHORT_TEST_1,  0x00); //Default Disable (00000000)
-    i2c_writeReg(devid, REG_FUNC_OPEN_SHORT_TEST_2,  0x00); //Default Disable (00000000)
-    i2c_writeReg(devid, REG_FUNC_ADC_OUTPUT,         0x00); //Default Disable (00000000)
-    i2c_writeReg(devid, REG_FUNC_VAF_1,              0x44); //Default (01000100)
-    i2c_writeReg(devid, REG_FUNC_VAF_2,              0x04); //Default (00000100)
-    i2c_writeReg(devid, REG_FUNC_SHUTDOWN,           0x01); //wakeup
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_FUNC_AUDIO_GAIN_CONTROL, 0x00); //Disable (00000000)
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_FUNC_STAGGERED_DELAY,    0x00); //Disable (00000000)
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_FUNC_SLEW_RATE_CONTROL,  0x01); //Enable (00000001)
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_FUNC_CURRENT_CONTROL,    0xB0); //Default Disabled (00110001,0x31,8mA), Max (10111111,0xBF,39.5mA), Choosen(10110000,0x30,32mA)
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_FUNC_OPEN_SHORT_TEST_1,  0x00); //Default Disable (00000000)
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_FUNC_OPEN_SHORT_TEST_2,  0x00); //Default Disable (00000000)
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_FUNC_ADC_OUTPUT,         0x00); //Default Disable (00000000)
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_FUNC_VAF_1,              0x44); //Default (01000100)
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_FUNC_VAF_2,              0x04); //Default (00000100)
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_FUNC_SHUTDOWN,           0x01); //wakeup
 
     //All LEDs ON in Frame1, not PWM
-    i2c_writeReg(devid, REG_CONFIGURE_COMMAND,       PAGE_FRAME_1);
-    i2c_writeBuf(devid, 0x00, state_frame1, 16);
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_CONFIGURE_COMMAND,       PAGE_FRAME_1);
+    i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, 0x00, state_frame1, 16);
 
     //All LEDs ON Frame2, not PWM
-    i2c_writeReg(devid, REG_CONFIGURE_COMMAND,       PAGE_FRAME_2);
-    i2c_writeBuf(devid, 0x00, state_frame2, 8);    
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_CONFIGURE_COMMAND,       PAGE_FRAME_2);
+    i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, 0x00, state_frame2, 8);    
 }
 
 
-void SLED1734X_flush(void){
+void sled1734x_flush(void){
 }
 
-void SLED1734X_set_color(int index, uint8_t r, uint8_t g, uint8_t b){
-    uint8_t underglow_index = index - SN32F2XX_LED_COUNT;
-    switch (led_map[underglow_index][3]){
+void sled1734x_set_color(int index, uint8_t r, uint8_t g, uint8_t b){
+    switch (led_map[index][3]){
         case PAGE_FRAME_1:
-            i2c_writeReg(UNDERGLOW_I2C_ADR, REG_CONFIGURE_COMMAND, PAGE_FRAME_1);
-            i2c_writeReg(UNDERGLOW_I2C_ADR, led_map[underglow_index][0], r);
-            i2c_writeReg(UNDERGLOW_I2C_ADR, led_map[underglow_index][1], g);
-            i2c_writeReg(UNDERGLOW_I2C_ADR, led_map[underglow_index][2], b);
+            i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_CONFIGURE_COMMAND, PAGE_FRAME_1);
+            i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, led_map[index][0], r);
+            i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, led_map[index][1], g);
+            i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, led_map[index][2], b);
             break;
 
         case PAGE_FRAME_SPLIT:
-            i2c_writeReg(UNDERGLOW_I2C_ADR, REG_CONFIGURE_COMMAND, PAGE_FRAME_1);
-            i2c_writeReg(UNDERGLOW_I2C_ADR, led_map[underglow_index][0], r);
-            i2c_writeReg(UNDERGLOW_I2C_ADR, led_map[underglow_index][1], g);
-            i2c_writeReg(UNDERGLOW_I2C_ADR, REG_CONFIGURE_COMMAND, PAGE_FRAME_2);
-            i2c_writeReg(UNDERGLOW_I2C_ADR, led_map[underglow_index][2], b);
+            i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_CONFIGURE_COMMAND, PAGE_FRAME_1);
+            i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, led_map[index][0], r);
+            i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, led_map[index][1], g);
+            i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_CONFIGURE_COMMAND, PAGE_FRAME_2);
+            i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, led_map[index][2], b);
             break;
 
         case PAGE_FRAME_2:
-            i2c_writeReg(UNDERGLOW_I2C_ADR, REG_CONFIGURE_COMMAND, PAGE_FRAME_2);
-            i2c_writeReg(UNDERGLOW_I2C_ADR, led_map[underglow_index][0], r);
-            i2c_writeReg(UNDERGLOW_I2C_ADR, led_map[underglow_index][1], g);
-            i2c_writeReg(UNDERGLOW_I2C_ADR, led_map[underglow_index][2], b);
+            i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_CONFIGURE_COMMAND, PAGE_FRAME_2);
+            i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, led_map[index][0], r);
+            i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, led_map[index][1], g);
+            i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, led_map[index][2], b);
             break;
     }
 }
 
-void SLED1734X_set_color_all(uint8_t r, uint8_t g, uint8_t b){
+void sled1734x_set_color_all(uint8_t r, uint8_t g, uint8_t b){
     for (int i = 0; i < RGB_MATRIX_LED_COUNT; i++) {
-        SLED1734X_set_color(i, r, g, b);
+        sled1734x_set_color(i, r, g, b);
     }
 }
