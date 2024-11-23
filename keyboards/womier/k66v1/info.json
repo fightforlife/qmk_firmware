@@ -215,7 +215,12 @@
             "splash": true, 
             "multisplash": true,
             "solid_splash": true,
-            "solid_multisplash": true   
+            "solid_multisplash": true,
+            "starlight": true,
+            "starlight_dual_hue": true,
+            "starlight_dual_sat": true,
+            "flower_blooming": true,
+            "riverflow": true      
         },
         "center_point": [112, 31],
         "default": {
