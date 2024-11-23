@@ -33,7 +33,7 @@
  * i2c_delay 1 loop about 7 cycles. Under 48MHz, the actual delay is around 0.9us and 1.5us respectively.
  * Reduced this from 2 to 0 on Womier K66. No problems in testing.
  */
-#define I2C_DELAY           i2c_delay(1)
+#define I2C_DELAY           i2c_delay(0)
 
 
 void i2c_delay(int delay){
