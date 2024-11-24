@@ -49,7 +49,9 @@
         "space_cadet": false
     },
     "eeprom": {
+        "driver": "wear_leveling", 
         "wear_leveling": {
+            "driver": "embedded_flash",
             "backing_size": 64,
             "logical_size": 32
         }

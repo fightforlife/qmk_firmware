@@ -26,7 +26,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______ , _______ , _______  , _______ , _______ , _______ , _______ , _______ , _______ , _______ , _______ , _______ , _______ , QK_RBT  , KC_PGDN ,
     _______ , _______ , _______  , _______ , _______ , _______ , _______ , _______ , RGB_VAI , RGB_SPI , RGB_HUI , RGB_SAI , _______ ,
     RGB_RMOD, _______ , _______  , _______ , _______ , _______ , _______ , RGB_VAD , RGB_SPD , RGB_HUD , RGB_SAD , _______ , KC_VOLU ,
-    RGB_MOD , _______ , _______  ,                     RGB_TOG ,                     _______ , _______ , KC_MPLY , KC_MPRV , KC_VOLD , KC_MNXT
+    RGB_MOD , EE_CLR  , _______  ,                     RGB_TOG ,                     _______ , _______ , KC_MPLY , KC_MPRV , KC_VOLD , KC_MNXT
     )
 };
 

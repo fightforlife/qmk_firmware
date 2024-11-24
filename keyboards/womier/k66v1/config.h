@@ -1,15 +1,9 @@
 #pragma once
 
-
-
 #define LAYER_STATE_8BIT
 #define MATRIX_COLS 14
 #define MATRIX_ROWS 5
 
-// RGB_MATRIX config
-//#define UNDERGLOW_I2C_ADR 0xE8  //AD is connected to ground (1110100(0)=0xE8)
-//#define UNDERGLOW_LED_TOTAL 43
-//#define RGB_MATRIX_LED_COUNT (SN32F2XX_LED_COUNT + UNDERGLOW_LED_TOTAL)
 
 /* sn32fxx.h Definitions for K66v1*/
 #define SN32F2XX_LED_OUTPUT_LUMINOSITY_R 1
@@ -53,13 +47,8 @@
 
 #define SLED1734X_I2C_ADDRESS_1 SLED1734X_I2C_ADDRESS_GND  //AD is connected to ground (1110100(0)=0xE8) (0x74 << 1)
 #define SLED1734X_LED_COUNT 43
-#define SLED1734X_RGB_MATRIX_COLOR_DEPTH 8
+#define SLED1734X_RGB_MATRIX_COLOR_DEPTH 8 // 8 and 16 are possible, 24 takes too much RAM
 
 #define I2C1_SCL_PIN D0
 #define I2C1_SDA_PIN A15
 #define SLED1734X_SDB_PIN C9
-
-
-//#define I2C_DRIVER I2CD0
-//#define I2C1_OPMODE OPMODE_I2C
-//#define I2C1_CLOCK_SPEED 400000

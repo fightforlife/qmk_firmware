@@ -6,9 +6,9 @@ SRC += custom_drivers/rand.c
 
 # reduce stack size
 USE_EXCEPTIONS_STACKSIZE = 0x150
-#0x135 OK #0x100 NOK 105 OK/ 0x125 OK
+# 0x140 OK
 USE_PROCESS_STACKSIZE = 0x200
-# 0x195 OK #0x150 NOK 155 OK / 0x175 OK
+# 0x190 OK
 TOP_SYMBOLS = yes
 
 #EXTRAFLAGS += -flto -O3 #more RAM with O3

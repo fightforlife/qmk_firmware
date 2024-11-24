@@ -1,8 +1,6 @@
 #include "rgb_matrix.h"
-#include "drivers/led/sn32f2xx.c"
-//#include "custom_drivers/sled1734x_mixed.c"
+#include "custom_drivers/sn32f2xx.c"
 #include "custom_drivers/sled1734x_direct.c"
-//#include "drivers/led/sled1734x.c"
 
 void custom_init(void) {
     sn32f2xx_init();
