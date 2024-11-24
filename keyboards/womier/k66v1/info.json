@@ -4,8 +4,7 @@
     "manufacturer": "Womier",
     "url": "https://de.aliexpress.com/item/4000314836215.html",
     "bootloader_instructions": "Flash Jumploader, activated by pressing BACKSPACE when pluging",
-    "tags": ["60%", "rgb"],
-
+    "tags": ["65%", "rgb"],
     "bootloader": "sn32-dfu",
     "processor": "SN32F268F", 
 
@@ -56,27 +55,6 @@
             "logical_size": 32
         }
     },
-    "qmk": {
-        "locking": {
-            "enabled": false,
-            "resync": false
-        },
-        "tap_capslock_delay": 80,
-        "tap_keycode_delay": 0
-    },
-
-    "tapping": {
-        "hold_on_other_key_press": false,
-        "hold_on_other_key_press_per_key": false, 
-        "permissive_hold": false, 
-        "permissive_hold_per_key": false, 
-        "retro": false,
-        "retro_per_key": false,
-        "term": 200,
-        "term_per_key": false,
-        "toggle": 5
-    },
-
 
     "community_layouts": ["66_ansi"],
     "layout_aliases": {
@@ -372,10 +350,6 @@
         "max_power": 500,
         "no_startup_check": false, 
         "polling_interval": 1,
-        "shared_endpoint": {
-            "keyboard": false,
-            "mouse": false
-        },
         "suspend_wakeup_delay": 5
     }
 }
