@@ -1,5 +1,4 @@
-/* Copyright 2022 QMK
- * Copyright 2024 Dimitris Mantzouranis <d3xter93@gmail.com>
+/* Copyright 2024 Dimitris Mantzouranis <d3xter93@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,16 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#pragma once
-
-#define RAW_IN_CAPACITY 1
-#define RAW_OUT_CAPACITY 1
-
-#ifndef EARLY_INIT_PERFORM_BOOTLOADER_JUMP
-#    define EARLY_INIT_PERFORM_BOOTLOADER_JUMP TRUE
-#endif
-
-#ifndef WEAR_LEVELING_EFL_OMIT_LAST_SECTOR_COUNT
-#    define WEAR_LEVELING_EFL_OMIT_LAST_SECTOR_COUNT 1
-#endif
+void board_init(void) {
+	SN_SYS0->EXRSTCTRL_b.RESETDIS = 1; // Disable RESET
+	SN_SYS0->SWDCTRL_b.SWDDIS = 1; // Disable SWD
+}
