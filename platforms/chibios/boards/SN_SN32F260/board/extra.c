@@ -13,6 +13,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <hal.h>
+
 void board_init(void) {
 	SN_SYS0->EXRSTCTRL_b.RESETDIS = 1; // Disable RESET
 	SN_SYS0->SWDCTRL_b.SWDDIS = 1; // Disable SWD

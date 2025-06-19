@@ -24,4 +24,4 @@ Enter the bootloader in 3 ways:
 
 * **Bootmagic reset**: Hold down the key at (0,0) in the matrix (Escape) and plug in the keyboard
 * **Physical reset button**: You can locate the boot pins under the Spacebar.
-* **Keycode in layout**: Press Fn1+ESC to enter the bootloader mode.
+* **Keycode in layout**: Press Fn1+~ to enter the bootloader mode.

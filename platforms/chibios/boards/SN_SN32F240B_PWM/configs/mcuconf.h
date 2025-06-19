@@ -50,6 +50,18 @@
  */
 // Defaults are correct
 /*
+ * SPI driver system settings.
+ */
+// Defaults are correct
+/*
+ * I2C driver system settings.
+ */
+// Defaults are correct
+/*
+ * UART driver system settings.
+ */
+// Defaults are correct
+/*
  * System Clock settings.
  */
 // Defaults are correct

@@ -20,11 +20,43 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include QMK_KEYBOARD_H
 
-bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+uint8_t r = 0;
+uint8_t g = 0;
+uint8_t b = 0;
+	
+bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
+    if (!rgb_matrix_indicators_advanced_user(led_min, led_max)) {
+        return false;
+    }
     if (host_keyboard_led_state().caps_lock) {
-        RGB_MATRIX_INDICATOR_SET_COLOR(13, 255, 255, 255); // assuming caps lock is at led #13 (rbg)
+		r = 100;
     } else {
-        RGB_MATRIX_INDICATOR_SET_COLOR(13, 0, 0, 0);
+		r = 0;
+	}
+	if (host_keyboard_led_state().scroll_lock) {
+		g = 100;
+    } else {
+		g = 0;
+	}
+	if (keymap_config.no_gui) {
+		b = 100;
+	} else {
+		b = 0;
+	}
+	RGB_MATRIX_INDICATOR_SET_COLOR(13, r, g, b);
+	if (get_highest_layer(layer_state) > 0) {
+        uint8_t layer = get_highest_layer(layer_state);
+
+        for (uint8_t row = 0; row < MATRIX_ROWS; ++row) {
+            for (uint8_t col = 0; col < MATRIX_COLS; ++col) {
+                uint8_t index = g_led_config.matrix_co[row][col];
+
+                if (index >= led_min && index < led_max && index != NO_LED &&
+                keymap_key_to_keycode(layer, (keypos_t){col,row}) > KC_TRNS) {
+                    rgb_matrix_set_color(index, RGB_BLUE);
+                }
+            }
+        }
     }
     return false;
 }
@@ -54,11 +86,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_LCTL, KC_LGUI, KC_LALT,                            KC_SPC,                             KC_RALT, MO(1),   KC_APP,  KC_RCTL,    KC_LEFT, KC_DOWN, KC_RGHT
     ),
     [1] = LAYOUT(
-	    QK_BOOT,            KC_VOLD,  KC_VOLU,   KC_MUTE,    KC_MPLY,    KC_MYCM,    KC_WHOM,    KC_WFAV,    KC_CPNL,    KC_CALC,    KC_MAIL, KC_BRID,  KC_BRIU,      RGB_HUD,  RGB_TOG,   RGB_HUI,
-		NK_TOGG,  _______,  _______,  _______,   _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______, _______,  _______,      _______,  RGB_MOD,   _______,
-		_______,  _______,  _______,  _______,   _______,    _______,    _______,    _______,    _______,    _______,    _______,    KC_LBRC, KC_RBRC,  KC_BSLS,      RGB_M_T,  RGB_M_SN,  RGB_M_X,
+	    EE_CLR,            KC_VOLD,  KC_VOLU,   KC_MUTE,    KC_MPLY,    KC_MYCM,    KC_WHOM,    KC_WFAV,    KC_CPNL,    KC_CALC,    KC_MAIL, KC_BRID,  KC_BRIU,      RGB_HUD,  RGB_TOG,   RGB_HUI,
+		QK_BOOT,  _______,  _______,  _______,   _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______, _______,  _______,      _______,  RGB_MOD,   _______,
+		NK_TOGG,  _______,  _______,  _______,   _______,    _______,    _______,    _______,    _______,    _______,    _______,    KC_LBRC, KC_RBRC,  KC_BSLS,      RGB_M_T,  RGB_M_SN,  RGB_M_X,
 		_______,  _______,  _______,  _______,   _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,           _______,
 		_______,            _______,  _______,   _______,    _______,    _______,    _______,    _______,    _______,    _______,    _______,           _______,                 RGB_VAI,
-		_______,  AG_LSWP,  AG_LNRM,                                     _______,                                        _______,    _______, _______,  _______,      RGB_SPD,   RGB_VAD,  RGB_SPI
-             )
+		_______,  AG_LSWP,  AG_LNRM,                                     _______,                                        _______,    _______, GU_TOGG,  _______,      RGB_SPD,   RGB_VAD,  RGB_SPI
+        )
 };

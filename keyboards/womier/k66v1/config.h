@@ -16,6 +16,8 @@
 
 #pragma once
 
+#define SERIAL_NUMBER "Womier K66v1"
+
 #define LAYER_STATE_8BIT
 #define MATRIX_COLS 14
 #define MATRIX_ROWS 5
