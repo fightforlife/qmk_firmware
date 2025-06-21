@@ -7,7 +7,7 @@ SRC += custom_drivers/rand.c
 # reduce stack size
 USE_EXCEPTIONS_STACKSIZE = 0x118
 # 0x118 last OK
-USE_PROCESS_STACKSIZE = 0x190
+USE_PROCESS_STACKSIZE = 0x1a0
 # 0x1a0 last ok
 TOP_SYMBOLS = 10000
 

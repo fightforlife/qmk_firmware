@@ -22,6 +22,10 @@
 #define MATRIX_COLS 14
 #define MATRIX_ROWS 5
 
+//Saving Space
+#define NO_ACTION_TAPPING
+#define NO_ACTION_ONESHOT
+
 
 /* sn32fxx.h Definitions for K66v1*/
 #define SN32F2XX_LED_OUTPUT_LUMINOSITY_R 1
