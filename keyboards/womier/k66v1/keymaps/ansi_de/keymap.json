@@ -1,0 +1,3 @@
+{
+  "modules": ["getreuer/palettefx", "qmk/flow_rgb_matrix_effect", "getreuer/lumino", "getreuer/socd_cleaner"]
+}
