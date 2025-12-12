@@ -1,25 +1,29 @@
 {
     "manufacturer": "Keychron",
     "keyboard_name": "Keychron C1",
-    "maintainer": "NetUserGet",
+    "maintainer": "SonixQMK",
     "development_board": "sn32f240b_shared_matrix",
     "diode_direction": "COL2ROW",
+    "build": {
+        "debounce_type": "asym_eager_defer_pk"
+    },
     "features": {
         "bootmagic": true,
         "command": false,
         "console": false,
         "extrakey": true,
         "mousekey": true,
-        "nkro": true,
         "rgb_matrix": true,
+        "nkro": false,
         "dip_switch": true
     },
-    "bootloader_instructions": "Hold FN + ESC",
+    "bootloader_instructions": "To enter bootloader: Press FN+ESC (powered), or short boot pads and plug in.",
+    "dip_switch": {
+        "enabled": true,
+        "pins": ["D4"]
+    },
     "indicators": {
         "caps_lock": "B10"
-    },
-    "dip_switch": {
-        "pins": ["D4"]
     },
     "matrix_pins": {
         "cols": ["A8", "A9", "A10", "A11", "A12", "A13", "A14", "A15", "B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8"],
@@ -248,6 +252,7 @@
             {"matrix":[5, 15], "flags":4, "x":210, "y":64},
             {"matrix":[5, 16], "flags":4, "x":224, "y":64}
         ],
-        "sleep": true
+        "sleep": true,
+        "timeout": 300000
     }
 }

@@ -1,4 +1,5 @@
-/* Copyright 2024 NetUserGet
+/* Copyright 2025 @ Keychron (https://www.keychron.com)
+ * Copyright 2025 vjdato21 <vjdato21@outlook.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,63 +17,41 @@
 
 #include "quantum.h"
 
-bool mode_leds_show = true;
-
-
 #ifdef DIP_SWITCH_ENABLE
-    static void mode_leds_update(void){
-        if (mode_leds_show && layer_state_is(_WIN_BASE)) {
-            gpio_write_pin_high(LED_WIN_PIN);
-        } else if (mode_leds_show && layer_state_is(_MAC_BASE)) {
-            gpio_write_pin_high(LED_MAC_PIN);
-        }
+bool dip_switch_update_kb(uint8_t index, bool active) {
+    if (!dip_switch_update_user(index, active)) {
+        return false;
     }
-    bool dip_switch_update_kb(uint8_t index, bool active) {
-        if (!dip_switch_update_user(index, active)) {
-            return false;
-        }
-        if (index == 0) {
-            if (active) {
-                default_layer_state_set_kb(1 << _MAC_BASE); /* set layer 2 to be on */
-            }
-        }
-        mode_leds_update();
-        return true;
+    if (index == 0) {
+        default_layer_set(1UL << (active ? 2 : 0));
     }
-#endif // DIP_SWITCH_ENABLE
-
-
-void keyboard_pre_init_kb(void) {
-    // Setup Win & Mac LED Pins as output
-    gpio_set_pin_output(LED_WIN_PIN);
-    gpio_set_pin_output(LED_MAC_PIN);
+    return true;
 }
+#endif
 
 void keyboard_post_init_kb(void) {
-    // Setup Default Keymap.
-    // If you chose to not have the dipswich enabled change this _WIN_BASE to be your default keymap.
-    // Eg: _MAC_BASE
-    default_layer_state_set_kb(1 << _WIN_BASE); /* set layer 0 to be on */
+    gpio_set_pin_output_push_pull(LED_MAC_PIN);
+    gpio_set_pin_output_push_pull(LED_WIN_PIN);
+    gpio_write_pin(LED_MAC_PIN, !LED_OS_PIN_ON_STATE);
+    gpio_write_pin(LED_WIN_PIN, !LED_OS_PIN_ON_STATE);
+
+    keyboard_post_init_user();
 }
 
-
-#ifdef RGB_MATRIX_SLEEP
-    void suspend_power_down_kb(void) {
-        // Turn leds off
-        mode_leds_show = false;
-        mode_leds_update();
-      
-        #ifdef RGB_MATRIX
-        rgb_matrix_set_suspend_state(true);
-        #endif
-    
+void housekeeping_task_kb(void) {
+    if (default_layer_state == (1U << 2)) {
+        gpio_write_pin(LED_MAC_PIN, LED_OS_PIN_ON_STATE);
+        gpio_write_pin(LED_WIN_PIN, !LED_OS_PIN_ON_STATE);
     }
-
-    void suspend_wakeup_init_kb(void) {
-        mode_leds_show = true;
-        mode_leds_update();
-        #ifdef RGB_MATRIX
-        rgb_matrix_set_suspend_state(false);
-        #endif
+    if (default_layer_state == (1U << 0)) {
+        gpio_write_pin(LED_MAC_PIN, !LED_OS_PIN_ON_STATE);
+        gpio_write_pin(LED_WIN_PIN, LED_OS_PIN_ON_STATE);
     }
-#endif // RGB_MATRIX_SLEEP
+}
+
+void suspend_power_down_kb(void) {
+    gpio_write_pin(LED_WIN_PIN, !LED_OS_PIN_ON_STATE);
+    gpio_write_pin(LED_MAC_PIN, !LED_OS_PIN_ON_STATE);
+
+    suspend_power_down_user();
+}

@@ -4,7 +4,7 @@
 
 A customizable TKL keyboard.
 
-* Keyboard Maintainer(s): [SonixQMK](https://github.com/SonixQMK), [IsaacDynamo](https://github.com/IsaacDynamo), [noldevin](https://github.com/noldevin), [vjdato21](https://github.com/vjdato21) [NetUserGet](https://github.com/NetUserGet)
+* Keyboard Maintainer(s): [SonixQMK](https://github.com/SonixQMK), [IsaacDynamo](https://github.com/IsaacDynamo), [noldevin](https://github.com/noldevin), [vjdato21](https://github.com/vjdato21), [NetUserGet](https://github.com/NetUserGet)
 * Hardware Supported: Keychron C1 RGB Hot-swappable
 * Hardware Availability: [Keychron](https://www.keychron.com/products/keychron-c1-wired-mechanical-keyboard?variant=32321246986329)
 
@@ -12,19 +12,14 @@ Make example for this keyboard (after setting up your build environment):
 
     make keychron/c1/rgb:default
 Flashing example for this keyboard:
-1. If your keyboard currently has stock firmware installed, put your keyboard first into bootloader by shorting the boot pins found under the spacebar before plugging in your keyboard to the PC. Otherwise, press `Fn + Esc` to put your keyboard into bootloader.
-2. Download and run [Sonix Flasher](https://github.com/SonixQMK/sonix-flasher/releases).
-3. In Sonix Flasher, select `SN32F24X` under 'Device'. And select `0x00` as the qmk offset.
-4. Lastly, click 'Flash QMK...' and find the compiled firmware.
+1. Download and run [Sonix Flasher](https://github.com/SonixQMK/sonix-flasher/releases/latest).
+2. Click `Reboot to Bootloader [HFD]`
+3. Select `SN32F24X` under 'Device'. And select `0x00` as the qmk offset.
+4. Click `Flash QMK...` and open the compiled firmware.
 
 * * *
-# Firmware Details
-### Firmware Version:
-* Default - 0.7.101
-* VIA - Supported
-* * *
-# Keymapping
-### Windows Mode
+## Keymapping
+#### Windows Mode
 <details>
 
 Without Fn | With Fn
@@ -54,7 +49,7 @@ Page Down | Decrease RGB Hue
 
 </details>
 
-### Mac Mode
+#### Mac Mode
 <details>
 
 Without Fn | With Fn
@@ -85,11 +80,13 @@ Page Down | Decrease RGB Hue
 
 </details>
 
-In an occassion that the keyboard does not send keystrokes to your PC, press `Fn + B`. This will restart your keyboard and should resolve the problem.
+In an occassion that the keyboard does not send keystrokes to your PC, press `FN + B`. This will restart your keyboard and should resolve the problem.
 * * *
-
-In an occassion that the keyboard does not send keystrokes to your PC, press `Fn + B`. This will restart your keyboard and should resolve the problem.
-
-For more information and more detailed flashing instructions, please visit https://github.com/CanUnesi/QMK-on-K6#readme
+## Bootloader
+To enter the bootloader, you can use any of the following methods:
+- Press `FN + ESC` if the keyboard is already powered on.
+- Short the boot pads below the space bar, then plug in your keyboard.
+* * *
+For more information and more detailed flashing instructions, please visit [SonixQMK Docs](https://sonixqmk.github.io/qmk_docs/newbs_getting_started)
 
 See the [build environment setup](https://docs.qmk.fm/#/getting_started_build_tools) and the [make instructions](https://docs.qmk.fm/#/getting_started_make_guide) for more information. Brand new to QMK? Start with our [Complete Newbs Guide](https://docs.qmk.fm/#/newbs).

@@ -52,3 +52,12 @@ const uint16_t PROGMEM encoder_map[][1][2] = {
     [1]   = {ENCODER_CCW_CW(RGB_VAD, RGB_VAI) },
 };
 #endif
+
+#if defined(CAPS_LOCK_LED_INDEX)
+bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    if (host_keyboard_led_state().caps_lock) {
+        RGB_MATRIX_INDICATOR_SET_COLOR(CAPS_LOCK_LED_INDEX, RGB_WHITE);
+    }
+    return false;
+}
+#endif
