@@ -2,7 +2,6 @@
 
 #include QMK_KEYBOARD_H
 #include "keymap_german.h"
-
 // Each layer gets a name for readability, which is then used in the keymap matrix below.
 // The underscores don't mean anything - you can have a layer called STUFF or any other name.
 // Layer names don't all need to be of the same length, obviously, and you can also skip them
@@ -30,34 +29,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     )
 };
 
-
+/*
 socd_cleaner_t socd_opposing_pairs[] = {
   {{DE_W, DE_S}, SOCD_CLEANER_LAST},
   {{DE_A, DE_D}, SOCD_CLEANER_LAST},
 };
 
-/* bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
-    if (host_keyboard_led_state().caps_lock) {
-        rgb_matrix_set_color(15, RGB_WHITE);
-    }
-    return false;
-}
 
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-    switch (keycode) {
-        case RGB_TOG:
-            if (record->event.pressed) {
-                switch (rgb_matrix_get_flags()) {
-                    case LED_FLAG_ALL: {
-                        rgb_matrix_set_flags(LED_FLAG_NONE);
-                        rgb_matrix_set_color_all(0, 0, 0);
-                    } break;
-                    default: {
-                        rgb_matrix_set_flags(LED_FLAG_ALL);
-                    } break;
-                }
-            }
-            return false;
-    }
-    return true;
-} */
+const indicator_t PROGMEM indicators[] = {
+    LAYER_INDICATOR(_FN1, RGB_COLOR(RGB_OFF)),
+    KEYCODE_IN_LAYER_INDICATOR(QK_BOOT, UTILS, HSV_COLOR(HSV_RED)),
+    CAPS_LOCK_INDICATOR(HSV_COLOR(HSV_RED)),
+};
+*/
