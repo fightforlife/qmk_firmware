@@ -66,7 +66,6 @@
     "processor": "SN32F268F",
     "rgb_matrix": {
         "animations": {
-            "solid_color": false,
             "alpha_mods": false,
             "band_pinwheel_sat": false,
             "band_pinwheel_val": false,
@@ -110,7 +109,7 @@
             "solid_reactive_simple": false,
             "solid_reactive_wide": false,
             "solid_splash": false,
-            "splash": false,
+            "splash": true,
             "starlight": false,
             "starlight_dual_hue": false,
             "starlight_dual_sat": false,
