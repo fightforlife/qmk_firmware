@@ -78,3 +78,9 @@
 
 #define PALETTEFX_ENABLE_ALL_EFFECTS
 #define PALETTEFX_ENABLE_ALL_PALETTES
+#define LUMINO_HIGH_BRIGHTNESS  1.0
+#define LUMINO_LOW_BRIGHTNESS   0.4
+#define LUMINO_LONG_TIMEOUT  1000 * 60 * 2  // = 5 minutes.
+#define LUMINO_SOON_TIMEOUT  1000 * 3      // = 12 seconds.
+#define LUMINO_TRANSITION    750            // = 750 ms.
+#define LUMINO_BOOT_COLOR  RGB_RED

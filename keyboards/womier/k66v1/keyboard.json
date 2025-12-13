@@ -66,7 +66,7 @@
     "processor": "SN32F268F",
     "rgb_matrix": {
         "animations": {
-            "solid_color": true,
+            "solid_color": false,
             "alpha_mods": false,
             "band_pinwheel_sat": false,
             "band_pinwheel_val": false,
@@ -120,7 +120,7 @@
         "default": {
             "animation": "solid_color",
             "hue": 0,
-            "on": true,
+            "on": false,
             "sat": 255,
             "speed": 128,
             "val": 255

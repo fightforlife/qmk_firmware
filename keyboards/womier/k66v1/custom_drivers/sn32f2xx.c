@@ -501,7 +501,7 @@ static void update_pwm_channels(PWMDriver *pwmp) {
         if (led_index >= SN32F2XX_LED_COUNT) continue;
 #    elif(SN32F2XX_PWM_CONTROL == HARDWARE_PWM)
         if (led_index >= SN32F2XX_LED_COUNT) continue;
-#    endif // SN32F2XX_PWM_CONTROL
+#    endif
         uint8_t led_row_id = (current_key_row * SN32F2XX_RGB_MATRIX_ROW_CHANNELS);
         // Check if we need to enable RGB output
         if (sn32f2xx_load_color(led_index, 'B') > 0) enable_pwm_output |= true;
@@ -515,11 +515,11 @@ static void update_pwm_channels(PWMDriver *pwmp) {
     }
     // Enable RGB output
     if (enable_pwm_output) {
-        gpio_set_pin_output_push_pull(led_col_pins[current_key_col ]);
+        gpio_set_pin_output_push_pull(led_col_pins[current_key_col]);
 #        if (SN32F2XX_RGB_OUTPUT_ACTIVE_LEVEL == SN32F2XX_RGB_OUTPUT_ACTIVE_HIGH)
-        gpio_write_pin_high(led_col_pins[current_key_col ]);
+        gpio_write_pin_high(led_col_pins[current_key_col]);
 #        elif (SN32F2XX_RGB_OUTPUT_ACTIVE_LEVEL == SN32F2XX_RGB_OUTPUT_ACTIVE_LOW)
-        gpio_write_pin_low(led_col_pins[current_key_col ]);
+        gpio_write_pin_low(led_col_pins[current_key_col]);
 #        endif // SN32F2XX_RGB_OUTPUT_ACTIVE_LEVEL
     }
 #    elif (SN32F2XX_PWM_CONTROL == SOFTWARE_PWM)

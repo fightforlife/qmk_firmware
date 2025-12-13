@@ -23,9 +23,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_FN1] = LAYOUT_66_ansi(
     DE_CIRC , KC_F1   , KC_F2    , KC_F3   , KC_F4   , KC_F5   , KC_F6   , KC_F7   , KC_F8   , KC_F9   , KC_F10  , KC_F11  , KC_F12  , QK_BOOT , KC_PGUP ,
     _______ , _______ , _______  , _______ , _______ , _______ , _______ , _______ , _______ , _______ , _______ , _______ , _______ , QK_RBT  , KC_PGDN ,
-    _______ , _______ , _______  , _______ , _______ , _______ , _______ , _______ , RGB_VAI , RGB_SPI , RGB_HUI , RGB_SAI , _______ ,
-    RGB_RMOD, _______ , _______  , _______ , _______ , _______ , _______ , RGB_VAD , RGB_SPD , RGB_HUD , RGB_SAD , _______ , KC_VOLU ,
-    RGB_MOD , EE_CLR  , LUMINO   ,                     RGB_TOG ,                     _______ , _______ , KC_MPLY , KC_MPRV , KC_VOLD , KC_MNXT
+    _______ , _______ , _______  , _______ , _______ , _______ , _______ , _______ , RM_VALU , RM_SPDU , RM_HUEU , RM_SATU , _______ ,
+    RM_NEXT , _______ , _______  , _______ , _______ , _______ , _______ , RM_VALD , RM_SPDD , RM_HUED , RM_SATD , _______ , KC_VOLU ,
+    RM_PREV , EE_CLR  , _______  ,                     LUMINO ,                     _______ , _______ , KC_MPLY , KC_MPRV , KC_VOLD , KC_MNXT
     )
 };
 
