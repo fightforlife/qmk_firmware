@@ -52,7 +52,7 @@
  * i2c_delay 1 loop about 7 cycles. Under 48MHz, the actual delay is around 0.9us and 1.5us respectively.
  * Reduced this from 2 to 0 on Womier K66. No problems in testing.
  */
-#define I2C_DELAY           i2c_delay(1)
+#define I2C_DELAY           i2c_delay(0)
 
 
 void i2c_delay(int delay){
@@ -473,7 +473,7 @@ static void sled1734x_set_color(int index, uint8_t r, uint8_t g, uint8_t b){
     uint8_t remainder = (led_map[index][0]-SLED1734X_OFFSET) % 0x10; // D
     uint8_t location  = ((base * 0x10) / 0x03) + remainder; // 0x3D
 
-    uint16_t byte_idx = location * 3;
+    uint16_t byte_idx = (uint16_t)location * 3u;
     if (pwm_buffer[byte_idx] == r && pwm_buffer[byte_idx + 1] == g && pwm_buffer[byte_idx + 2] == b) {
         return;
     }
