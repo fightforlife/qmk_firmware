@@ -244,10 +244,14 @@ uint8_t pwm_buffer[64] = {0};
 
 
 bool pwm_buffer_dirty = false; 
+/* Track dirty 16-entry groups (64 entries / 16 = 4 groups) so we only
+    write changed register blocks to the SLED1734X. Each bit corresponds
+    to a group of 16 pwm_buffer entries. */
+static uint8_t pwm_group_dirty = 0;
 
 
 
-void sled1734x_init_drivers(){
+static void sled1734x_init_drivers(void) {
     // initialise I2C
     i2c_init();
     //write config Registers as described in SLED1734 pdf (Matrix type3), using writeReg func since performance is not important. (page 82, middle, 86-)
@@ -279,142 +283,207 @@ void sled1734x_init_drivers(){
     i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, 0x00, state_frame2, 8);    
 }
 
-void sled1734x_flush(void) {
-    if (pwm_buffer_dirty) {
+static void sled1734x_flush(void) {
+    if (!pwm_group_dirty) return;
 
-#if (SLED1734X_RGB_MATRIX_COLOR_DEPTH == 16)
-        uint8_t temp[16] = {0};
+#if (SLED1734X_RGB_MATRIX_COLOR_DEPTH == 24)
+    uint8_t temp[16];
 
-        i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_CONFIGURE_COMMAND, PAGE_FRAME_1);
+    /* PAGE FRAME 1 */
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_CONFIGURE_COMMAND, PAGE_FRAME_1);
 
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i] & 0b1111100000000000) >> 11) * 8;
-        }
+    /* Group 0: pwm_buffer[0..15] -> offsets 0x00,0x10,0x20 (R,G,B) */
+    if (pwm_group_dirty & 0x01) {
+        for (int i = 0; i < 16; i++) temp[i] = pwm_buffer[(i * 3) + 0];
         i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x00, temp, 16);
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i] & 0b0000011111100000) >> 5) * 4;
-        }
+        for (int i = 0; i < 16; i++) temp[i] = pwm_buffer[(i * 3) + 1];
         i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x10, temp, 16);
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i] & 0b0000000000011111) >> 0) * 8;           
-        }
+        for (int i = 0; i < 16; i++) temp[i] = pwm_buffer[(i * 3) + 2];
         i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x20, temp, 16);
+    }
 
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 16] & 0b1111100000000000) >> 11) * 8;
-        }
+    /* Group 1: pwm_buffer[16..31] -> offsets 0x30,0x40,0x50 */
+    if (pwm_group_dirty & 0x02) {
+        int base = 16;
+        for (int i = 0; i < 16; i++) temp[i] = pwm_buffer[((base + i) * 3) + 0];
         i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x30, temp, 16);
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 16] & 0b0000011111100000) >> 5) * 4;
-        }
+        for (int i = 0; i < 16; i++) temp[i] = pwm_buffer[((base + i) * 3) + 1];
         i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x40, temp, 16);
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 16] & 0b0000000000011111) >> 0) * 8;
-        }
+        for (int i = 0; i < 16; i++) temp[i] = pwm_buffer[((base + i) * 3) + 2];
         i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x50, temp, 16);
+    }
 
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 32] & 0b1111100000000000) >> 11) * 8;
-        }
+    /* Group 2: pwm_buffer[32..47] -> offsets 0x60,0x70 (frame1) and 0x00 (frame2 B part) */
+    if (pwm_group_dirty & 0x04) {
+        int base = 32;
+        for (int i = 0; i < 16; i++) temp[i] = pwm_buffer[((base + i) * 3) + 0];
         i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x60, temp, 16);
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 32] & 0b0000011111100000) >> 5) * 4;
-        }
+        for (int i = 0; i < 16; i++) temp[i] = pwm_buffer[((base + i) * 3) + 1];
         i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x70, temp, 16);
+    }
 
+    /* PAGE FRAME 2 */
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_CONFIGURE_COMMAND, PAGE_FRAME_2);
 
-
-        i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_CONFIGURE_COMMAND, PAGE_FRAME_2);
-
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 32] & 0b0000000000011111) >> 0) * 8;
-        }
+    /* Group 2 B-part */
+    if (pwm_group_dirty & 0x04) {
+        int base = 32;
+        for (int i = 0; i < 16; i++) temp[i] = pwm_buffer[((base + i) * 3) + 2];
         i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x00, temp, 16);
+    }
 
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 48] & 0b1111100000000000) >> 11) * 8;
-        }
+    /* Group 3: pwm_buffer[48..63] -> frame2 offsets 0x10,0x20,0x30 */
+    if (pwm_group_dirty & 0x08) {
+        int base = 48;
+        for (int i = 0; i < 16; i++) temp[i] = pwm_buffer[((base + i) * 3) + 0];
         i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x10, temp, 16);
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 48] & 0b0000011111100000) >> 5) * 4;
-        }
+        for (int i = 0; i < 16; i++) temp[i] = pwm_buffer[((base + i) * 3) + 1];
         i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x20, temp, 16);
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 48] & 0b0000000000011111) >> 0) * 8;
-        }
+        for (int i = 0; i < 16; i++) temp[i] = pwm_buffer[((base + i) * 3) + 2];
         i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x30, temp, 16);
+    }
+
+    /* Clear dirty mask */
+    pwm_group_dirty = 0;
+    pwm_buffer_dirty = false;
+
+#elif (SLED1734X_RGB_MATRIX_COLOR_DEPTH == 16)
+    uint8_t temp[16];
+
+    /* PAGE FRAME 1 */
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_CONFIGURE_COMMAND, PAGE_FRAME_1);
+
+    /* Group 0: pwm_buffer[0..15] -> offsets 0x00,0x10,0x20 */
+    if (pwm_group_dirty & 0x01) {
+        for (int i = 0; i < 16; i++) temp[i] = ((pwm_buffer[i] & 0b1111100000000000) >> 11) * 8;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x00, temp, 16);
+        for (int i = 0; i < 16; i++) temp[i] = ((pwm_buffer[i] & 0b0000011111100000) >> 5) * 4;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x10, temp, 16);
+        for (int i = 0; i < 16; i++) temp[i] = ((pwm_buffer[i] & 0b0000000000011111) >> 0) * 8;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x20, temp, 16);
+    }
+
+    /* Group 1: pwm_buffer[16..31] -> offsets 0x30,0x40,0x50 */
+    if (pwm_group_dirty & 0x02) {
+        int base = 16;
+        for (int i = 0; i < 16; i++) temp[i] = ((pwm_buffer[base + i] & 0b1111100000000000) >> 11) * 8;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x30, temp, 16);
+        for (int i = 0; i < 16; i++) temp[i] = ((pwm_buffer[base + i] & 0b0000011111100000) >> 5) * 4;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x40, temp, 16);
+        for (int i = 0; i < 16; i++) temp[i] = ((pwm_buffer[base + i] & 0b0000000000011111) >> 0) * 8;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x50, temp, 16);
+    }
+
+    /* Group 2: pwm_buffer[32..47] -> offsets 0x60,0x70 (frame1) and 0x00 (frame2 B part) */
+    if (pwm_group_dirty & 0x04) {
+        int base = 32;
+        for (int i = 0; i < 16; i++) temp[i] = ((pwm_buffer[base + i] & 0b1111100000000000) >> 11) * 8;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x60, temp, 16);
+        for (int i = 0; i < 16; i++) temp[i] = ((pwm_buffer[base + i] & 0b0000011111100000) >> 5) * 4;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x70, temp, 16);
+    }
+
+    /* PAGE FRAME 2 */
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_CONFIGURE_COMMAND, PAGE_FRAME_2);
+
+    /* Group 2 B-part */
+    if (pwm_group_dirty & 0x04) {
+        int base = 32;
+        for (int i = 0; i < 16; i++) temp[i] = ((pwm_buffer[base + i] & 0b0000000000011111) >> 0) * 8;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x00, temp, 16);
+    }
+
+    /* Group 3: pwm_buffer[48..63] -> frame2 offsets 0x10,0x20,0x30 */
+    if (pwm_group_dirty & 0x08) {
+        int base = 48;
+        for (int i = 0; i < 16; i++) temp[i] = ((pwm_buffer[base + i] & 0b1111100000000000) >> 11) * 8;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x10, temp, 16);
+        for (int i = 0; i < 16; i++) temp[i] = ((pwm_buffer[base + i] & 0b0000011111100000) >> 5) * 4;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x20, temp, 16);
+        for (int i = 0; i < 16; i++) temp[i] = ((pwm_buffer[base + i] & 0b0000000000011111) >> 0) * 8;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x30, temp, 16);
+    }
+
+    /* Clear dirty mask */
+    pwm_group_dirty = 0;
+    pwm_buffer_dirty = false;
 
 #elif (SLED1734X_RGB_MATRIX_COLOR_DEPTH == 8)
-        uint8_t temp[16] = {0};
+    uint8_t temp8[16];
 
-        i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_CONFIGURE_COMMAND, PAGE_FRAME_1);
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_CONFIGURE_COMMAND, PAGE_FRAME_1);
 
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i] & 0b11100000) >> 5) * 32;
-        }
-        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x00, temp, 16);
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i] & 0b00011100) >> 2) * 32;
-        }
-        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x10, temp, 16);
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i] & 0b00000011) >> 0) * 64;
-        }
-        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x20, temp, 16);
+    if (pwm_group_dirty & 0x01) {
+        for (int i = 0; i < 16; i++) temp8[i] = ((pwm_buffer[i] & 0b11100000) >> 5) * 32;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x00, temp8, 16);
+        for (int i = 0; i < 16; i++) temp8[i] = ((pwm_buffer[i] & 0b00011100) >> 2) * 32;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x10, temp8, 16);
+        for (int i = 0; i < 16; i++) temp8[i] = ((pwm_buffer[i] & 0b00000011) >> 0) * 64;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x20, temp8, 16);
+    }
 
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 16] & 0b11100000) >> 5) * 32;
-        }
-        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x30, temp, 16);
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 16] & 0b00011100) >> 2) * 32;
-        }
-        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x40, temp, 16);
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 16] & 0b00000011) >> 0) * 64;
-        }
-        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x50, temp, 16);
+    if (pwm_group_dirty & 0x02) {
+        int base = 16;
+        for (int i = 0; i < 16; i++) temp8[i] = ((pwm_buffer[base + i] & 0b11100000) >> 5) * 32;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x30, temp8, 16);
+        for (int i = 0; i < 16; i++) temp8[i] = ((pwm_buffer[base + i] & 0b00011100) >> 2) * 32;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x40, temp8, 16);
+        for (int i = 0; i < 16; i++) temp8[i] = ((pwm_buffer[base + i] & 0b00000011) >> 0) * 64;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x50, temp8, 16);
+    }
 
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 32] & 0b11100000) >> 5) * 32;
-        }
-        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x60, temp, 16);
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 32] & 0b00011100) >> 2) * 32;
-        }
-        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x70, temp, 16);
+    if (pwm_group_dirty & 0x04) {
+        int base = 32;
+        for (int i = 0; i < 16; i++) temp8[i] = ((pwm_buffer[base + i] & 0b11100000) >> 5) * 32;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x60, temp8, 16);
+        for (int i = 0; i < 16; i++) temp8[i] = ((pwm_buffer[base + i] & 0b00011100) >> 2) * 32;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x70, temp8, 16);
+    }
 
+    i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_CONFIGURE_COMMAND, PAGE_FRAME_2);
 
+    if (pwm_group_dirty & 0x04) {
+        int base = 32;
+        for (int i = 0; i < 16; i++) temp8[i] = ((pwm_buffer[base + i] & 0b00000011) >> 0) * 64;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x00, temp8, 16);
+    }
 
-        i2c_writeReg(SLED1734X_I2C_ADDRESS_1 << 1, REG_CONFIGURE_COMMAND, PAGE_FRAME_2);
+    if (pwm_group_dirty & 0x08) {
+        int base = 48;
+        for (int i = 0; i < 16; i++) temp8[i] = ((pwm_buffer[base + i] & 0b11100000) >> 5) * 32;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x10, temp8, 16);
+        for (int i = 0; i < 16; i++) temp8[i] = ((pwm_buffer[base + i] & 0b00011100) >> 2) * 32;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x20, temp8, 16);
+        for (int i = 0; i < 16; i++) temp8[i] = ((pwm_buffer[base + i] & 0b00000011) >> 0) * 64;
+        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x30, temp8, 16);
+    }
 
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 32] & 0b00000011) >> 0) * 64;
-        }
-        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x00, temp, 16);
-
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 48] & 0b11100000) >> 5) * 32;
-        }
-        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x10, temp, 16);
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 48] & 0b00011100) >> 2) * 32;
-        }
-        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x20, temp, 16);
-        for (int i = 0; i < 16; i++) {
-            temp[i] = ((pwm_buffer[i + 48] & 0b00000011) >> 0) * 64;
-        }
-        i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, SLED1734X_OFFSET + 0x30, temp, 16);
+    pwm_group_dirty = 0;
+    pwm_buffer_dirty = false;
 
 #endif // SLED1734X_RGB_MATRIX_COLOR_DEPTH
-    }
 }
 
-void sled1734x_set_color(int index, uint8_t r, uint8_t g, uint8_t b){
+static void sled1734x_set_color(int index, uint8_t r, uint8_t g, uint8_t b){
 
 
 
-#if (SLED1734X_RGB_MATRIX_COLOR_DEPTH == 16)
+#if (SLED1734X_RGB_MATRIX_COLOR_DEPTH == 24)
+    uint8_t base      = (led_map[index][0]-SLED1734X_OFFSET) / 0x10; // 9
+    uint8_t remainder = (led_map[index][0]-SLED1734X_OFFSET) % 0x10; // D
+    uint8_t location  = ((base * 0x10) / 0x03) + remainder; // 0x3D
+
+    uint16_t byte_idx = location * 3;
+    if (pwm_buffer[byte_idx] == r && pwm_buffer[byte_idx + 1] == g && pwm_buffer[byte_idx + 2] == b) {
+        return;
+    }
+    pwm_buffer[byte_idx + 0] = r;
+    pwm_buffer[byte_idx + 1] = g;
+    pwm_buffer[byte_idx + 2] = b;
+    pwm_buffer_dirty     = true;
+    pwm_group_dirty |= (1 << (location / 16));
+
+#elif (SLED1734X_RGB_MATRIX_COLOR_DEPTH == 16)
     /*Calculate the byte location for all three colors example
     R=CA7_M 0x6C   /   G=CA9_M 0x8C   /   B=CA8_M 0x7C
     Target is byte 44 0x2C
@@ -426,11 +495,13 @@ void sled1734x_set_color(int index, uint8_t r, uint8_t g, uint8_t b){
     uint8_t location  = ((base * 0x10) / 0x03) + remainder; // 0x3D
     //uint8_t location  = ((((led_map[index][0]-SLED1734X_OFFSET) / 0x10) * 0x10) / 0x03) + ((led_map[index][0]-SLED1734X_OFFSET) % 0x10); // 0x3D
 
-    if (pwm_buffer[location] == ((r * 31 / 255) << 11) + ((g * 63 / 255) << 5) + ((b * 31 / 255) << 0)) {
+    uint16_t newval = ((r * 31 / 255) << 11) + ((g * 63 / 255) << 5) + ((b * 31 / 255) << 0);
+    if (pwm_buffer[location] == newval) {
         return;
     }
-    pwm_buffer[location] = ((r * 31 / 255) << 11) + ((g * 63 / 255) << 5) + ((b * 31 / 255) << 0);
+    pwm_buffer[location] = newval;
     pwm_buffer_dirty     = true;
+    pwm_group_dirty |= (1 << (location / 16));
 
 #elif (SLED1734X_RGB_MATRIX_COLOR_DEPTH == 8)
     /*Calculate the byte location for all three colors example
@@ -443,17 +514,16 @@ void sled1734x_set_color(int index, uint8_t r, uint8_t g, uint8_t b){
     uint8_t remainder = (led_map[index][0]-SLED1734X_OFFSET) % 0x10; // D
     uint8_t location  = ((base * 0x10) / 0x03) + remainder; // 0x3D
 
-    if (pwm_buffer[location] == ((r * 7 / 255) << 5) + ((g * 7 / 255) << 2) + (b * 3 / 255)) {
+    uint8_t newval8 = ((r * 7 / 255) << 5) + ((g * 7 / 255) << 2) + (b * 3 / 255);
+    if (pwm_buffer[location] == newval8) {
         return;
     }
-    pwm_buffer[location] = ((r * 7 / 255) << 5) + ((g * 7 / 255) << 2) + (b * 3 / 255);
+    pwm_buffer[location] = newval8;
     pwm_buffer_dirty     = true;
+    pwm_group_dirty |= (1 << (location / 16));
 #endif // SLED1734X_RGB_MATRIX_COLOR_DEPTH
 
 }
 
-void sled1734x_set_color_all(uint8_t r, uint8_t g, uint8_t b){
-    for (int i = 0; i < RGB_MATRIX_LED_COUNT; i++) {
-        sled1734x_set_color(i, r, g, b);
-    }
-}
+/* `sled1734x_set_color_all` intentionally omitted — callers use
+   `custom_set_color_all` which dispatches per-LED. */
