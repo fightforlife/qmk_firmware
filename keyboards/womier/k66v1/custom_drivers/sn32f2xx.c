@@ -404,34 +404,35 @@ static void update_pwm_channels(PWMDriver *pwmp) {
 #    elif(SN32F2XX_PWM_CONTROL == HARDWARE_PWM)
         if (led_index >= SN32F2XX_LED_COUNT) continue;
 #    endif // SN32F2XX_PWM_CONTROL
-        // Check if we need to enable RGB output
-        if (sn32f2xx_load_color(led_index, 'B') > 0) enable_pwm_output |= true;
-        if (sn32f2xx_load_color(led_index, 'G') > 0) enable_pwm_output |= true;
-        if (sn32f2xx_load_color(led_index, 'R') > 0) enable_pwm_output |= true;
-            // Update matching RGB channel PWM configuration
+        /* Read RGB once and reuse to avoid multiple function calls */
+        uint8_t col_r = sn32f2xx_load_color(led_index, 'R');
+        uint8_t col_g = sn32f2xx_load_color(led_index, 'G');
+        uint8_t col_b = sn32f2xx_load_color(led_index, 'B');
+        /* Check if we need to enable RGB output */
+        if (col_r || col_g || col_b) enable_pwm_output = true;
 #    if (SN32F2XX_PWM_CONTROL == HARDWARE_PWM)
         switch (current_row % SN32F2XX_RGB_MATRIX_ROW_CHANNELS) {
             case 0:
-                pwmEnableChannel(pwmp, chan_col_order[current_key_col], sn32f2xx_load_color(led_index, 'B'));
+                pwmEnableChannel(pwmp, chan_col_order[current_key_col], col_b);
                 break;
             case 1:
-                pwmEnableChannel(pwmp, chan_col_order[current_key_col], sn32f2xx_load_color(led_index, 'G'));
+                pwmEnableChannel(pwmp, chan_col_order[current_key_col], col_g);
                 break;
             case 2:
-                pwmEnableChannel(pwmp, chan_col_order[current_key_col], sn32f2xx_load_color(led_index, 'R'));
+                pwmEnableChannel(pwmp, chan_col_order[current_key_col], col_r);
                 break;
             default:;
         }
 #    elif (SN32F2XX_PWM_CONTROL == SOFTWARE_PWM)
         switch (current_row % SN32F2XX_RGB_MATRIX_ROW_CHANNELS) {
             case 0:
-                led_duty_cycle[current_key_col] = sn32f2xx_load_color(led_index, 'R');
+                led_duty_cycle[current_key_col] = col_r;
                 break;
             case 1:
-                led_duty_cycle[current_key_col] = sn32f2xx_load_color(led_index, 'B');
+                led_duty_cycle[current_key_col] = col_b;
                 break;
             case 2:
-                led_duty_cycle[current_key_col] = sn32f2xx_load_color(led_index, 'G');
+                led_duty_cycle[current_key_col] = col_g;
                 break;
             default:;
         }
@@ -495,24 +496,25 @@ static void update_pwm_channels(PWMDriver *pwmp) {
     }
 
     bool enable_pwm_output = false;
-    for (uint8_t current_key_row = 0; current_key_row < MATRIX_ROWS; current_key_row++) {
+        for (uint8_t current_key_row = 0; current_key_row < MATRIX_ROWS; current_key_row++) {
         uint8_t led_index = g_led_config.matrix_co[current_key_row][current_key_col];
-#    if (SN32F2XX_PWM_CONTROL == SOFTWARE_PWM)
+    #    if (SN32F2XX_PWM_CONTROL == SOFTWARE_PWM)
         if (led_index >= SN32F2XX_LED_COUNT) continue;
-#    elif(SN32F2XX_PWM_CONTROL == HARDWARE_PWM)
+    #    elif(SN32F2XX_PWM_CONTROL == HARDWARE_PWM)
         if (led_index >= SN32F2XX_LED_COUNT) continue;
-#    endif
+    #    endif
         uint8_t led_row_id = (current_key_row * SN32F2XX_RGB_MATRIX_ROW_CHANNELS);
-        // Check if we need to enable RGB output
-        if (sn32f2xx_load_color(led_index, 'B') > 0) enable_pwm_output |= true;
-        if (sn32f2xx_load_color(led_index, 'G') > 0) enable_pwm_output |= true;
-        if (sn32f2xx_load_color(led_index, 'R') > 0) enable_pwm_output |= true;
-            // Update matching RGB channel PWM configuration
-#    if (SN32F2XX_PWM_CONTROL == HARDWARE_PWM)
-        pwmEnableChannelI(pwmp, chan_row_order[(led_row_id + 0)], sn32f2xx_load_color(led_index, 'R'));
-        pwmEnableChannelI(pwmp, chan_row_order[(led_row_id + 1)], sn32f2xx_load_color(led_index, 'B'));
-        pwmEnableChannelI(pwmp, chan_row_order[(led_row_id + 2)], sn32f2xx_load_color(led_index, 'G'));
-    }
+        /* Read colors once */
+        uint8_t col_r = sn32f2xx_load_color(led_index, 'R');
+        uint8_t col_g = sn32f2xx_load_color(led_index, 'G');
+        uint8_t col_b = sn32f2xx_load_color(led_index, 'B');
+        /* Check if we need to enable RGB output */
+        if (col_r || col_g || col_b) enable_pwm_output = true;
+    #    if (SN32F2XX_PWM_CONTROL == HARDWARE_PWM)
+        pwmEnableChannelI(pwmp, chan_row_order[(led_row_id + 0)], col_r);
+        pwmEnableChannelI(pwmp, chan_row_order[(led_row_id + 1)], col_b);
+        pwmEnableChannelI(pwmp, chan_row_order[(led_row_id + 2)], col_g);
+        }
     // Enable RGB output
     if (enable_pwm_output) {
         gpio_set_pin_output_push_pull(led_col_pins[current_key_col]);
