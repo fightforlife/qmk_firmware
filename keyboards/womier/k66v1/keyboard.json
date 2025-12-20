@@ -21,7 +21,7 @@
     },
     "host": {
         "default": {
-            "nkro": false
+            "nkro": true
         }
     },
     "features": {
@@ -44,7 +44,7 @@
         "midi": false,
         "mouse_key": false,
         "music": false,
-        "nkro": false,
+        "nkro": true,
         "one_shot": false,
         "ps2": false,
         "rgb_matrix": true,
@@ -253,8 +253,11 @@
         "no_startup_check": false,
         "pid": "0x7698",
         "polling_interval": 1,
-        "suspend_wakeup_delay": 5,
+        "suspend_wakeup_delay": 0,
         "vid": "0xFEED"
+    },
+    "qmk": {
+        "keys_per_scan": 12
     },
     "community_layouts": ["66_ansi"],
     "layout_aliases": {
