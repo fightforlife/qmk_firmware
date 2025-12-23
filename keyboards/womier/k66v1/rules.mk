@@ -11,4 +11,6 @@ USE_PROCESS_STACKSIZE = 0x1c0
 # 0x1a0 last ok
 TOP_SYMBOLS = 10000
 
-EXTRAFLAGS += -flto -Os#-O3 #more RAM with O3
+# Size and optimization flags: LTO, optimize for size, strip unused
+EXTRAFLAGS += -flto -Os  -ffunction-sections -fdata-sections -DNO_DEBUG -DNO_PRINT
+LDFLAGS += -Wl,--gc-sections
