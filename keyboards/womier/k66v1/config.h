@@ -25,7 +25,7 @@
 //Saving Space
 #define NO_ACTION_TAPPING
 #define NO_ACTION_ONESHOT
-
+#define KEYBOARD_IN_CAPACITY 1
 
 /* sn32fxx.h Definitions for K66v1*/
 #define SN32F2XX_LED_OUTPUT_LUMINOSITY_R 1

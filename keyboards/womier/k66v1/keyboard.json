@@ -21,7 +21,7 @@
     },
     "host": {
         "default": {
-            "nkro": true
+            "nkro": false
         }
     },
     "features": {
@@ -35,7 +35,7 @@
         "dip_switch": false,
         "eeprom": true,
         "encoder": false,
-        "extrakey": true,
+        "extrakey": false,
         "grave_esc": false,
         "indicators": false,
         "leader_key": false,
@@ -44,7 +44,7 @@
         "midi": false,
         "mouse_key": false,
         "music": false,
-        "nkro": true,
+        "nkro": false,
         "one_shot": false,
         "ps2": false,
         "rgb_matrix": true,

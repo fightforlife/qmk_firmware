@@ -6,11 +6,16 @@ SRC += custom_drivers/rand.c
 
 # reduce stack size
 USE_EXCEPTIONS_STACKSIZE = 0x130
-# 0x118 last OK
 USE_PROCESS_STACKSIZE = 0x1c0
-# 0x1a0 last ok
 TOP_SYMBOLS = 10000
 
 # Size and optimization flags: LTO, optimize for size, strip unused
-EXTRAFLAGS += -flto -Os  -ffunction-sections -fdata-sections -DNO_DEBUG -DNO_PRINT
+EXTRAFLAGS += -flto -Os  -ffunction-sections -fdata-sections -DNO_DEBUG -DNO_PRINT -fstack-usage
 LDFLAGS += -Wl,--gc-sections
+
+
+MOUSE_ENABLE = no
+RAW_ENABLE = no
+JOYSTICK_ENABLE = no
+DIGITIZER_ENABLE = no
+VIRTSER_ENABLE = no

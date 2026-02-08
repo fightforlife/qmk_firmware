@@ -18,6 +18,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-/* Prototypes intentionally omitted to keep these driver implementations
-	private to the keyboard's rgb driver (the .c files are included
-	directly into `rgb_matrix.c`). */
+/* Public prototypes for sled1734x driver used by `rgb_matrix.c`.
+	Note: implementations live in sled1734x_direct.c. */
+
+void sled1734x_init_drivers(void);
+void sled1734x_flush(void);
+void sled1734x_set_color(int index, uint8_t r, uint8_t g, uint8_t b);
+
+/* `sled1734x_set_color_all` is intentionally omitted — callers use
+	`custom_set_color_all` which dispatches per-LED. */

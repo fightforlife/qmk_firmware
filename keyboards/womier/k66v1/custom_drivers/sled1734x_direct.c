@@ -251,7 +251,7 @@ static uint8_t pwm_group_dirty = 0;
 
 
 
-static void sled1734x_init_drivers(void) {
+void sled1734x_init_drivers(void) {
     // initialise I2C
     i2c_init();
     //write config Registers as described in SLED1734 pdf (Matrix type3), using writeReg func since performance is not important. (page 82, middle, 86-)
@@ -283,7 +283,7 @@ static void sled1734x_init_drivers(void) {
     i2c_writeBuf(SLED1734X_I2C_ADDRESS_1 << 1, 0x00, state_frame2, 8);    
 }
 
-static void sled1734x_flush(void) {
+void sled1734x_flush(void) {
     if (!pwm_group_dirty) return;
 
 #if (SLED1734X_RGB_MATRIX_COLOR_DEPTH == 24)
@@ -464,7 +464,7 @@ static void sled1734x_flush(void) {
 #endif // SLED1734X_RGB_MATRIX_COLOR_DEPTH
 }
 
-static void sled1734x_set_color(int index, uint8_t r, uint8_t g, uint8_t b){
+void sled1734x_set_color(int index, uint8_t r, uint8_t g, uint8_t b){
 
 
 
