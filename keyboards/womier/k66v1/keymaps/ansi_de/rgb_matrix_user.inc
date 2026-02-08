@@ -1,2 +1,2 @@
 
-//#include "palettefx.inc"
+#include "palettefx.inc"

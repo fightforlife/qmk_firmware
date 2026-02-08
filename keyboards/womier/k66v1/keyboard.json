@@ -109,7 +109,7 @@
             "solid_reactive_simple": false,
             "solid_reactive_wide": false,
             "solid_splash": false,
-            "splash": true,
+            "splash": false,
             "starlight": false,
             "starlight_dual_hue": false,
             "starlight_dual_sat": false,

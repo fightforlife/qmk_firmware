@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-
+#include "elpekenin/indicators.h"
 #include QMK_KEYBOARD_H
 #include "keymap_german.h"
 // Each layer gets a name for readability, which is then used in the keymap matrix below.
@@ -25,20 +25,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     _______ , _______ , _______  , _______ , _______ , _______ , _______ , _______ , _______ , _______ , _______ , _______ , _______ , QK_RBT  , KC_PGDN ,
     _______ , _______ , _______  , _______ , _______ , _______ , _______ , _______ , RM_VALU , RM_SPDU , RM_HUEU , RM_SATU , _______ ,
     RM_NEXT , _______ , _______  , _______ , _______ , _______ , _______ , RM_VALD , RM_SPDD , RM_HUED , RM_SATD , _______ , KC_VOLU ,
-    RM_PREV , EE_CLR  , _______  ,                     _______ ,                     _______ , _______ , KC_MPLY , KC_MPRV , KC_VOLD , KC_MNXT
+    RM_PREV , EE_CLR  , _______  ,                     LUMINO  ,                     _______ , _______ , KC_MPLY , KC_MPRV , KC_VOLD , KC_MNXT
     )
-};
-
-/*
-socd_cleaner_t socd_opposing_pairs[] = {
-  {{DE_W, DE_S}, SOCD_CLEANER_LAST},
-  {{DE_A, DE_D}, SOCD_CLEANER_LAST},
 };
 
 
 const indicator_t PROGMEM indicators[] = {
     LAYER_INDICATOR(_FN1, RGB_COLOR(RGB_OFF)),
-    KEYCODE_IN_LAYER_INDICATOR(QK_BOOT, UTILS, HSV_COLOR(HSV_RED)),
-    CAPS_LOCK_INDICATOR(HSV_COLOR(HSV_RED)),
+    KEYCODE_IN_LAYER_INDICATOR(QK_BOOT, _FN1, HSV_COLOR(HSV_RED)),
+    CAPS_LOCK_INDICATOR(HUE(HUE_BLUE)),
 };
-*/

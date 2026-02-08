@@ -1,0 +1,12 @@
+{
+    "module_name": "Lumino",
+    "maintainer": "getreuer",
+    "license": "Apache-2.0",
+    "url": "https://getreuer.info/posts/keyboards/lumino",
+    "features": {
+        "rgb_matrix": true
+    },
+    "keycodes": [
+        { "key": "LUMINO" }
+    ]
+}
