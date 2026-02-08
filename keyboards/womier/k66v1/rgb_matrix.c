@@ -1,0 +1,56 @@
+/*
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+#include "rgb_matrix.h"
+#include "custom_drivers/sn32f2xx.c"
+#include "custom_drivers/sled1734x_direct.c"
+
+void custom_init(void) {
+    sn32f2xx_init();
+    sled1734x_init_drivers();
+}
+
+void custom_set_color(int index, uint8_t r, uint8_t g, uint8_t b) {
+     //if key matrix LEDs
+     if(index < SN32F2XX_LED_COUNT) 
+     {     
+        sn32f2xx_set_color(index, r, g, b);
+     }
+     //if underglow LEDs
+     else if (index < RGB_MATRIX_LED_COUNT)
+     {
+        index = index - SN32F2XX_LED_COUNT;
+        sled1734x_set_color(index, r, g, b);
+     }
+}
+
+void custom_set_color_all(uint8_t r, uint8_t g, uint8_t b) {
+    for (int i=0; i<RGB_MATRIX_LED_COUNT; i++) {
+        custom_set_color(i, r, g, b);
+    }
+}
+
+
+void custom_flush(void) {
+    sn32f2xx_flush();
+    sled1734x_flush();  
+}
+
+const rgb_matrix_driver_t rgb_matrix_driver = {
+    .init          = custom_init,
+    .flush         = custom_flush,
+    .set_color     = custom_set_color,
+    .set_color_all = custom_set_color_all,
+};
