@@ -1,5 +1,6 @@
 #Custom RGB Matrix driver to combine SN32 and SLED1734
 SRC += rgb_matrix.c  
+SRC += extras.c  
 # Include the patched functions to reduce RAM usage
 SRC += custom_drivers/no_idle_thread.c
 SRC += custom_drivers/rand.c
