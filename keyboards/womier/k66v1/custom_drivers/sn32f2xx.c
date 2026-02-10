@@ -38,6 +38,9 @@
 #    define SN32F2XX_RGB_MATRIX_COLOR_DEPTH 24
 #endif
 
+#ifndef SN32F2XX_RGB_MATRIX_BUFFER
+#    define SN32F2XX_RGB_MATRIX_BUFFER TRUE
+#endif
 
 /*
     Default configuration example
@@ -103,6 +106,7 @@ static const uint32_t periodticks                               = RGB_MATRIX_MAX
 static const uint32_t freq                                      = (RGB_MATRIX_HUE_STEP * RGB_MATRIX_SAT_STEP * RGB_MATRIX_VAL_STEP * RGB_MATRIX_SPD_STEP * RGB_MATRIX_LED_PROCESS_LIMIT);
 static const pin_t    led_row_pins[SN32F2XX_RGB_MATRIX_ROWS_HW] = SN32F2XX_RGB_MATRIX_ROW_PINS; // We expect a R,B,G order here
 static const pin_t    led_col_pins[SN32F2XX_RGB_MATRIX_COLS]    = SN32F2XX_RGB_MATRIX_COL_PINS;
+
 #if (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 24)
 static RGB            led_state[SN32F2XX_LED_COUNT];     // led state buffer
 #elif (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 16)
@@ -110,6 +114,17 @@ static uint16_t            led_state[SN32F2XX_LED_COUNT];     // led state buffe
 #elif (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 8)
 static uint8_t            led_state[SN32F2XX_LED_COUNT];     // led state buffer
 #endif //SN32F2XX_RGB_MATRIX_COLOR_DEPTH
+#if (SN32F2XX_RGB_MATRIX_BUFFER == FALSE) 
+#elif (SN32F2XX_RGB_MATRIX_BUFFER == TRUE)
+#if (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 24)
+static RGB            led_state_buf[SN32F2XX_LED_COUNT];     // led state buffer
+#elif (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 16)
+static uint16_t            led_state_buf[SN32F2XX_LED_COUNT];     // led state buffer
+#elif (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 8)
+static uint8_t            led_state_buf[SN32F2XX_LED_COUNT];     // led state buffer
+#endif //SN32F2XX_RGB_MATRIX_COLOR_DEPTH
+bool                  led_state_buf_update_required = false;
+#endif  //SN32F2XX_RGB_MATRIX_BUFFER
 #ifdef UNDERGLOW_RBG // handle underglow with flipped B,G channels
 static const uint8_t underglow_leds[UNDERGLOW_LEDS] = UNDERGLOW_IDX;
 #endif
@@ -616,10 +631,24 @@ void sn32f2xx_init(void) {
 }
 
 void sn32f2xx_flush(void) {
+#if (SN32F2XX_RGB_MATRIX_BUFFER == FALSE)       
     /* Double-buffer removed to save RAM; updates write directly into `led_state`. */
+#elif (SN32F2XX_RGB_MATRIX_BUFFER == TRUE)
+    if (led_state_buf_update_required) {
+#if (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 24)
+        memcpy(led_state, led_state_buf, sizeof(RGB) * SN32F2XX_LED_COUNT);
+#elif (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 16)
+        memcpy(led_state, led_state_buf, sizeof(uint16_t) * SN32F2XX_LED_COUNT);
+#elif (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 8)
+        memcpy(led_state, led_state_buf, sizeof(uint8_t) * SN32F2XX_LED_COUNT);
+#endif //SN32F2XX_RGB_MATRIX_COLOR_DEPTH
+        led_state_buf_update_required = false;
+    }
+#endif //SN32F2XX_RGB_MATRIX_BUFFER
 }
 
 void sn32f2xx_set_color(int index, uint8_t r, uint8_t g, uint8_t b) {
+#if (SN32F2XX_RGB_MATRIX_BUFFER == FALSE)   
     uint8_t color_r = r * SN32F2XX_LED_OUTPUT_LUMINOSITY_R;
     uint8_t color_g = g * SN32F2XX_LED_OUTPUT_LUMINOSITY_G;
     uint8_t color_b = b * SN32F2XX_LED_OUTPUT_LUMINOSITY_B;
@@ -655,9 +684,47 @@ void sn32f2xx_set_color(int index, uint8_t r, uint8_t g, uint8_t b) {
     sn32f2xx_save_color(index, 'B', color_b);
     sn32f2xx_save_color(index, 'G', color_g);
     chSysUnlock();
+
+#elif (SN32F2XX_RGB_MATRIX_BUFFER == TRUE)  
+    uint8_t color_r = r * SN32F2XX_LED_OUTPUT_LUMINOSITY_R;
+    uint8_t color_g = g * SN32F2XX_LED_OUTPUT_LUMINOSITY_G;
+    uint8_t color_b = b * SN32F2XX_LED_OUTPUT_LUMINOSITY_B;
+
+#ifdef UNDERGLOW_RBG
+    bool flip_gb = false;
+    for (uint8_t led_id = 0; led_id < UNDERGLOW_LEDS; led_id++) {
+        if (underglow_leds[led_id] == index) {
+            flip_gb = true;
+        }
+    }
+    if (flip_gb) {
+        if (sn32f2xx_load_color_buf(index, 'R') == color_r && sn32f2xx_load_color_buf(index, 'B') == color_g && sn32f2xx_load_color_buf(index, 'G') == color_b) {
+            return;
+        }
+        sn32f2xx_save_color_buf(index, 'R', color_r);
+        sn32f2xx_save_color_buf(index, 'B', color_g);
+        sn32f2xx_save_color_buf(index, 'G', color_b);
+        led_state_buf_update_required = true;
+    } else {
+#endif // UNDERGLOW_RBG
+        if (sn32f2xx_load_color_buf(index, 'R') == color_r && sn32f2xx_load_color_buf(index, 'B') == color_b && sn32f2xx_load_color_buf(index, 'G') == color_g) {
+            return;
+        }
+
+        sn32f2xx_save_color_buf(index, 'R', color_r);
+        sn32f2xx_save_color_buf(index, 'B', color_b);
+        sn32f2xx_save_color_buf(index, 'G', color_g);
+        led_state_buf_update_required = true;
+#ifdef UNDERGLOW_RBG
+    }
+#endif // UNDERGLOW_RBG
+
+
+#endif //SN32F2XX_RGB_MATRIX_BUFFER
 }
 
 void sn32f2xx_set_color_all(uint8_t r, uint8_t g, uint8_t b) {
+#if (SN32F2XX_RGB_MATRIX_BUFFER == FALSE)    
     chSysLock();
     for (int i = 0; i < SN32F2XX_LED_COUNT; i++) {
         uint8_t color_r = r * SN32F2XX_LED_OUTPUT_LUMINOSITY_R;
@@ -668,6 +735,13 @@ void sn32f2xx_set_color_all(uint8_t r, uint8_t g, uint8_t b) {
         sn32f2xx_save_color(i, 'G', color_g);
     }
     chSysUnlock();
+
+#elif (SN32F2XX_RGB_MATRIX_BUFFER == TRUE)
+    for (int i = 0; i < SN32F2XX_LED_COUNT; i++) {
+        sn32f2xx_set_color(i, r, g, b);
+    }
+
+#endif //SN32F2XX_RGB_MATRIX_BUFFER
 }
 
 #if defined(SHARED_MATRIX)
@@ -725,8 +799,49 @@ void sn32f2xx_save_color(uint8_t ledNumber, char colorChannel, uint8_t value) {
 }
 
 void sn32f2xx_save_color_buf(uint8_t ledNumber, char colorChannel, uint8_t value) {
+#if (SN32F2XX_RGB_MATRIX_BUFFER == FALSE)
     /* Double-buffer removed; forward to main save function */
     sn32f2xx_save_color(ledNumber, colorChannel, value);
+
+#elif (SN32F2XX_RGB_MATRIX_BUFFER == TRUE)
+#if (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 24)
+    switch(colorChannel){
+        case 'R':
+            led_state_buf[ledNumber].r = value; 
+            break;
+        case 'G':
+            led_state_buf[ledNumber].g = value; 
+            break;
+        case 'B':
+            led_state_buf[ledNumber].b = value;  
+            break;        
+    }
+#elif (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 16)
+    switch(colorChannel){
+        case 'R':
+            led_state_buf[ledNumber] = (led_state_buf[ledNumber] & ~0b1111100000000000) | (((value * 31 / 255) << 11) & 0b1111100000000000);
+            break;
+        case 'G':
+            led_state_buf[ledNumber] = (led_state_buf[ledNumber] & ~0b0000011111100000) | (((value * 63 / 255) <<  5) & 0b0000011111100000);
+            break;
+        case 'B':
+            led_state_buf[ledNumber] = (led_state_buf[ledNumber] & ~0b0000000000011111) | (((value * 31 / 255) <<  0) & 0b0000000000011111);
+            break;        
+    }           
+#elif (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 8)
+    switch(colorChannel){
+        case 'R':
+            led_state_buf[ledNumber] = (led_state_buf[ledNumber] & ~0b11100000) | (((value / 32) << 5) & 0b11100000);
+            break;
+        case 'G':
+            led_state_buf[ledNumber] = (led_state_buf[ledNumber] & ~0b00011100) | (((value / 32) << 2) & 0b00011100);
+            break;
+        case 'B':
+            led_state_buf[ledNumber] = (led_state_buf[ledNumber] & ~0b00000011) | (((value / 64) << 0) & 0b00000011);
+            break;        
+    }    
+#endif //SN32F2XX_RGB_MATRIX_COLOR_DEPTH
+#endif //SN32F2XX_RGB_MATRIX_BUFFER
 }
 
 
@@ -763,6 +878,40 @@ uint8_t sn32f2xx_load_color(uint8_t ledNumber, char colorChannel){
 }
 
 uint8_t sn32f2xx_load_color_buf(uint8_t ledNumber, char colorChannel){
+#if (SN32F2XX_RGB_MATRIX_BUFFER == FALSE)
     /* Double-buffer removed; forward to main load function */
     return sn32f2xx_load_color(ledNumber, colorChannel);
+
+#elif (SN32F2XX_RGB_MATRIX_BUFFER == TRUE)
+#if (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 24)
+    switch(colorChannel){
+        case 'R':
+            return led_state_buf[ledNumber].r;
+        case 'G':
+            return led_state_buf[ledNumber].g;
+        case 'B':
+            return led_state_buf[ledNumber].b;           
+    }           
+#elif (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 16)
+    switch(colorChannel){
+        case 'R':
+            return (uint8_t) ((led_state_buf[ledNumber] & 0b1111100000000000) >> 11) * 8;
+        case 'G':
+            return (uint8_t) ((led_state_buf[ledNumber] & 0b0000011111100000) >>  5) * 4;
+        case 'B':
+            return (uint8_t) ((led_state_buf[ledNumber] & 0b0000000000011111) >>  0) * 8;  
+    } 
+#elif (SN32F2XX_RGB_MATRIX_COLOR_DEPTH == 8)
+    switch(colorChannel){
+        case 'R':
+            return (uint8_t) ((led_state_buf[ledNumber] & 0b11100000) >> 5)*32;
+        case 'G':
+            return (uint8_t) ((led_state_buf[ledNumber] & 0b00011100) >> 2)*32;
+        case 'B':
+            return (uint8_t) ((led_state_buf[ledNumber] & 0b00000011) >> 0)*64;   
+    } 
+#endif //SN32F2XX_RGB_MATRIX_COLOR_DEPTH
+    return 0x00;
+
+#endif //SN32F2XX_RGB_MATRIX_BUFFER
 }
