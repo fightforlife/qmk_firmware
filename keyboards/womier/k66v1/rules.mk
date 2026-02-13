@@ -6,8 +6,8 @@ SRC += custom_drivers/no_idle_thread.c
 SRC += custom_drivers/rand.c
 
 # reduce stack size
-USE_EXCEPTIONS_STACKSIZE = 0x120
-USE_PROCESS_STACKSIZE = 0x1b0
+USE_EXCEPTIONS_STACKSIZE = 0x140
+USE_PROCESS_STACKSIZE = 0x1d0
 TOP_SYMBOLS = 10000
 
 # Size and optimization flags: LTO, optimize for size, strip unused
