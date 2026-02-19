@@ -6,7 +6,7 @@ SRC += custom_drivers/no_idle_thread.c
 SRC += custom_drivers/rand.c
 
 # reduce stack size
-USE_EXCEPTIONS_STACKSIZE = 0x140
+USE_EXCEPTIONS_STACKSIZE = 0x130
 USE_PROCESS_STACKSIZE = 0x1d0
 TOP_SYMBOLS = 10000
 
@@ -20,3 +20,6 @@ RAW_ENABLE = no
 JOYSTICK_ENABLE = no
 DIGITIZER_ENABLE = no
 VIRTSER_ENABLE = no
+
+SHARED_EP_ENABLE = yes
+KEYBOARD_SHARED_EP = yes

@@ -35,7 +35,7 @@
         "dip_switch": false,
         "eeprom": true,
         "encoder": false,
-        "extrakey": false,
+        "extrakey": true,
         "grave_esc": false,
         "indicators": false,
         "leader_key": false,
