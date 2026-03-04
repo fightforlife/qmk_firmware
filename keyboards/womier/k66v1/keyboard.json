@@ -12,12 +12,7 @@
     "debounce": 3,
     "diode_direction": "ROW2COL",
     "eeprom": {
-        "driver": "wear_leveling",
-        "wear_leveling": {
-            "backing_size": 64,
-            "driver": "embedded_flash",
-            "logical_size": 32
-        }
+        "driver": "custom"
     },
     "host": {
         "default": {

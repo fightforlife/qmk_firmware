@@ -1,3 +1,8 @@
+// Copyright 2021 gloryhzw
+// Copyright 2026 fightforlife
+// Copyright 2026 HorrorTroll <https://github.com/HorrorTroll>
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 // Small rand() implementation
 //
 // The libc rand implementation takes to much flash space, so an smaller rand() function is used. 

@@ -14,8 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "rgb_matrix.h"
-#include "custom_drivers/sn32f2xx.c"
-#include "custom_drivers/sled1734x_direct.c"
+#include "lib/rgb_matrix/sn32f2xx.c"
+#include "lib/i2c_led/sled1734x_direct.c"
 
 void custom_init(void) {
     sn32f2xx_init();

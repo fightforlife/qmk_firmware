@@ -1,18 +1,20 @@
-#Custom RGB Matrix driver to combine SN32 and SLED1734
+# Custom code
+SRC += lib/core/extra.c
+SRC += lib/core/no_idle_thread.c
+SRC += lib/core/rand.c
+SRC += lib/eeprom/eeprom_sn32_legacy.c
+SRC += lib/flash/sn32_legacy_flash_ops.c
 SRC += rgb_matrix.c  
-SRC += extras.c  
-# Include the patched functions to reduce RAM usage
-SRC += custom_drivers/no_idle_thread.c
-SRC += custom_drivers/rand.c
+
 
 # reduce stack size
 USE_EXCEPTIONS_STACKSIZE = 0x130
-USE_PROCESS_STACKSIZE = 0x1d0
+USE_PROCESS_STACKSIZE = 0x1D0
 TOP_SYMBOLS = 10000
 
 # Size and optimization flags: LTO, optimize for size, strip unused
 EXTRAFLAGS += -flto -Os  -ffunction-sections -fdata-sections -DNO_DEBUG -DNO_PRINT -fstack-usage
-LDFLAGS += -Wl,--gc-sections
+LDFLAGS += -Wl,--gc-sections,-Map,output.map
 
 
 MOUSE_ENABLE = no
